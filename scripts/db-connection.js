@@ -56,13 +56,13 @@ function getConfig(path, defaultValue = null) {
 
 // Настройки подключения к БД (как в официальном EverShop)
 const connectionSetting = {
-  host: process.env.DB_HOST || getConfig('system.database.host') || 'localhost',
+  host: process.env.DB_HOST || getConfig('system.database.host') || 'database',
   port:
     parseInt(process.env.DB_PORT) ||
     parseInt(getConfig('system.database.port')) ||
-    5433,
+    5432,
   user: process.env.DB_USER || getConfig('system.database.user') || 'postgres',
-  password: process.env.DB_PASSWORD || getConfig('system.database.password') || 'qwerty1234',
+  password: process.env.DB_PASSWORD || getConfig('system.database.password') || 'postgres',
   database: process.env.DB_NAME || getConfig('system.database.database') || 'postgres',
   max: 20
 };

@@ -1,0 +1,46 @@
+services:
+  app:
+    build: 
+      context: .  # путь к папке с Dockerfile
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_PASSWORD: postgres
+      DB_USER: postgres
+      DB_NAME: postgres
+    networks:
+      - myevershop
+    depends_on:
+      - database
+    ports:
+      - 3000:3000
+    volumes:
+      - ./data-export:/app/data-export:rw # чтобы изменения в этой папке отображались в контейнере без пересборки
+      - ./config:/app/config:rw 
+      - ./scripts:/app/scripts:rw 
+      - ./extensions:/app/extensions:rw 
+  
+  #The postgres database: 
+  database:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
+    networks:
+      - myevershop
+
+networks:
+  myevershop:
+    name: MyEverShop
+    driver: bridge
+
+volumes:
+  postgres-data:
