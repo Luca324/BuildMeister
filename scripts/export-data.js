@@ -28,6 +28,10 @@ if (!fs.existsSync(exportDir)) {
 // Список таблиц для экспорта с их SQL запросами
 const exportTables = [
   {
+    name: 'admin_user',
+    query: `SELECT * FROM admin_user`,
+    filename: 'admin_user.csv'
+  },{
     name: 'settings',
     query: `SELECT * FROM setting`,
     filename: 'settings.csv'
