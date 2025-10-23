@@ -21,6 +21,7 @@ services:
       - ./config:/app/config:rw 
       # - ./scripts:/app/scripts:rw 
       - ./extensions:/app/extensions:rw 
+      - ./extensions:/app/scripts/migrate.sh:rw 
   
   #The postgres database: 
   database:
