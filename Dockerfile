@@ -4,15 +4,16 @@ RUN npm install -g npm@9
 COPY package*.json .
 COPY themes ./themes
 COPY extensions ./extensions
-COPY public ./public
-COPY media ./media
 COPY config ./config
 COPY scripts ./scripts
 COPY data-export ./data-export
 RUN npm install
 RUN npm run build
 
-# RUN npm run db:import
+# Устанавливаем права на выполнение для скриптов
+RUN chmod +x ./scripts/migrate.sh
+RUN chmod +x ./scripts/import-data.js
+RUN chmod +x ./scripts/export-data.js
 
 EXPOSE 3000
 
