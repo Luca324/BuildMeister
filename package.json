@@ -1,0 +1,27 @@
+{
+  "name": "my-evershop-app",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "setup": "evershop install",
+    "start": "evershop start",
+    "build": "evershop build",
+    "dev": "evershop dev",
+    "db:export": "node scripts/export-data.js",
+    "db:import": "node scripts/import-data.js"
+  },
+  "dependencies": {
+    "@evershop/evershop": "2.0.1"
+  },
+  "devDependencies": {
+    "@parcel/watcher": "2.5.1",
+    "@types/config": "3.3.5",
+    "@types/express": "5.0.3",
+    "@types/node": "24.7.0",
+    "@types/pg": "8.15.5",
+    "@types/react": "19.2.2",
+    "execa": "9.6.0",
+    "typescript": "5.9.3"
+  }
+}
