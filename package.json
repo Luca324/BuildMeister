@@ -8,6 +8,7 @@
     "start": "evershop start",
     "build": "evershop build",
     "dev": "evershop dev",
+    "user:create": "evershop user:create",
     "db:export": "node scripts/export-data.js",
     "db:import": "node scripts/import-data.js"
   },

@@ -3,9 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createTableQueries } from './create-tables-script.js';
+
 import { getConnection, testConnection } from './db-connection.js';
-import { importTables } from './importTables.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +22,138 @@ if (!fs.existsSync(importDir)) {
   process.exit(1);
 }
 
-
+// Список таблиц для импорта в правильном порядке (с учетом зависимостей)
+const importTables = [
+  {
+    name: 'setting',
+    filename: 'settings.csv',
+    hasSequence: true,
+    sequenceName: 'setting_setting_id_seq',
+    truncate: true,
+    excludeColumns: ['setting_id'] // Исключаем автоинкрементные ID
+  },
+  {
+    name: 'category',
+    filename: 'categories.csv',
+    hasSequence: true,
+    sequenceName: 'category_category_id_seq',
+    truncate: true,
+    excludeColumns: ['category_id'] // Исключаем автоинкрементные ID
+  },
+  {
+    name: 'category_description',
+    filename: 'category_descriptions.csv',
+    hasSequence: false,
+    truncate: true,
+    excludeColumns: ['category_description_id']
+  },
+  {
+    name: 'attribute',
+    filename: 'attributes.csv',
+    hasSequence: true,
+    sequenceName: 'attribute_attribute_id_seq',
+    truncate: true,
+    excludeColumns: ['attribute_id']
+  },
+  {
+    name: 'attribute_option',
+    filename: 'attribute_options.csv',
+    hasSequence: true,
+    sequenceName: 'attribute_option_attribute_option_id_seq',
+    truncate: true,
+    excludeColumns: ['attribute_option_id']
+  },
+  {
+    name: 'attribute_group',
+    filename: 'attribute_groups.csv',
+    hasSequence: true,
+    sequenceName: 'attribute_group_attribute_group_id_seq',
+    truncate: true,
+    excludeColumns: ['attribute_group_id']
+  },
+  {
+    name: 'attribute_group_link',
+    filename: 'attribute_group_links.csv',
+    hasSequence: false,
+    truncate: true,
+    excludeColumns: ['attribute_group_link_id']
+  },
+  {
+    name: 'variant_group',
+    filename: 'variant_groups.csv',
+    hasSequence: true,
+    sequenceName: 'variant_group_variant_group_id_seq',
+    truncate: true,
+    excludeColumns: ['variant_group_id']
+  },
+  {
+    name: 'collection',
+    filename: 'collections.csv',
+    hasSequence: true,
+    sequenceName: 'collection_collection_id_seq',
+    truncate: true,
+    excludeColumns: ['collection_id']
+  },
+  {
+    name: 'product',
+    filename: 'products.csv',
+    hasSequence: true,
+    sequenceName: 'product_product_id_seq',
+    truncate: true,
+    excludeColumns: ['product_id']
+  },
+  {
+    name: 'product_description',
+    filename: 'product_descriptions.csv',
+    hasSequence: false,
+    truncate: true,
+    excludeColumns: ['product_description_id']
+  },
+  {
+    name: 'product_image',
+    filename: 'product_images.csv',
+    hasSequence: false,
+    truncate: true,
+    excludeColumns: ['product_image_id']
+  },
+  {
+    name: 'product_inventory',
+    filename: 'product_inventory.csv',
+    hasSequence: false,
+    truncate: true,
+    excludeColumns: ['product_inventory_id']
+  },
+  {
+    name: 'product_collection',
+    filename: 'product_collections.csv',
+    hasSequence: false,
+    truncate: true
+    // Для связующих таблиц оставляем ID, так как они обычно не автоинкрементные
+  },
+  {
+    name: 'product_attribute_value_index',
+    filename: 'product_attribute_values.csv',
+    hasSequence: false,
+    truncate: true
+    // Для связующих таблиц оставляем ID
+  },
+  {
+    name: 'product_custom_option',
+    filename: 'product_custom_options.csv',
+    hasSequence: true,
+    sequenceName: 'product_custom_option_product_custom_option_id_seq',
+    truncate: true,
+    excludeColumns: ['product_custom_option_id']
+  },
+  {
+    name: 'product_custom_option_value',
+    filename: 'product_custom_option_values.csv',
+    hasSequence: true,
+    sequenceName: 'product_custom_option_value_product_custom_option_value_id_seq',
+    truncate: true,
+    excludeColumns: ['product_custom_option_value_id']
+  }
+];
 
 async function truncateTable(tableName, client) {
   try {
@@ -142,7 +272,7 @@ async function importTable(tableConfig) {
     return dataLines.length;
     
   } catch (error) {
-    console.error(`❌ Ошибка при импорте таблицы AAAAAAAA ${tableConfig.name}:`, error.message);
+    console.error(`❌ Ошибка при импорте таблицы ${tableConfig.name}:`, error.message);
     if (error.query) {
       console.error(`   SQL: ${error.query}`);
     }
@@ -276,8 +406,6 @@ async function main() {
     if (!isConnected) {
       process.exit(1);
     }
-
-    await createTablesIfNotExist();
     
     // Читаем информацию об экспорте
     const exportInfo = await readExportInfo();
@@ -324,27 +452,5 @@ process.on('SIGINT', async () => {
   console.log('\n⏹️  Получен сигнал прерывания, завершаем работу...');
   process.exit(0);
 });
-
-async function createTablesIfNotExist() {
-  let client;
-  try {
-    console.log('🔍 Проверяем существование таблиц...');
-    client = await getConnection();
-    
-    for (const query of createTableQueries) {
-      await client.query(query);
-    }
-    
-    console.log('✅ Проверка/создание таблиц завершена');
-    
-  } catch (error) {
-    console.error('❌ Ошибка при создании таблиц:', error.message);
-    throw error;
-  } finally {
-    if (client) {
-      client.release();
-    }
-  }
-}
 
 main();
