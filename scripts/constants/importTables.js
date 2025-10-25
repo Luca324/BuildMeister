@@ -217,7 +217,6 @@ const importTables = [
 		name: 'migration',
 		filename: 'migration.csv',
 		hasSequence: false,
-		truncate: false, // Не удаляем миграции
 		excludeColumns: ['migration_id'],
 	},
 	{
