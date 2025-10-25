@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "setup": "evershop install",
+    "lint": "eslint scripts/**/*.js",
+    "lint:fix": "eslint scripts/**/*.js --fix",
     "start": "evershop start",
     "build": "evershop build",
     "dev": "evershop dev",
@@ -22,6 +24,11 @@
     "@types/node": "24.7.0",
     "@types/pg": "8.15.5",
     "@types/react": "19.2.2",
+    
+		"eslint": "^8.55.0",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-simple-import-sort": "^10.0.0",
+		"eslint-plugin-unused-imports": "^3.0.0",
     "execa": "9.6.0",
     "typescript": "5.9.3"
   }

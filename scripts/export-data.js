@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { getConnection, testConnection, connectionSetting } from './db-connection.js';
+import exportTables from './constants/exportTables.js';
+import { logDBStats, logExportSuccess } from './utils/logs.js';
+import { connectionSetting, getConnection, testConnection } from './db-connection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,14 +122,14 @@ async function exportTable(tableConfig) {
   let client;
   try {
     console.log(`📊 Экспортируем таблицу: ${tableConfig.name}...`);
-    
+
     client = await getConnection();
     const result = await client.query(tableConfig.query);
     const csvContent = convertToCSV(result.rows, result.fields);
-    
+
     const filePath = path.join(exportDir, tableConfig.filename);
     fs.writeFileSync(filePath, csvContent, 'utf8');
-    
+
     console.log(`✅ ${tableConfig.name}: ${result.rows.length} записей экспортировано в ${tableConfig.filename}`);
     return result.rows.length;
   } catch (error) {
@@ -146,18 +147,18 @@ async function exportTable(tableConfig) {
 
 function convertToCSV(rows, fields) {
   if (rows.length === 0) return '';
-  
+
   // Заголовки
   const headers = fields.map(field => field.name).join(',');
-  
+
   // Данные
   const dataRows = rows.map(row => {
     return fields.map(field => {
       const value = row[field.name];
       if (value === null || value === undefined) return '';
-      
+
       let stringValue;
-      
+
       // Обрабатываем даты специальным образом
       if (value instanceof Date) {
         stringValue = value.toISOString(); // Сохраняем в ISO формате
@@ -167,7 +168,7 @@ function convertToCSV(rows, fields) {
       } else {
         stringValue = String(value);
       }
-      
+
       // Экранируем значения содержащие запятые, кавычки или переносы строк
       if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
@@ -175,7 +176,7 @@ function convertToCSV(rows, fields) {
       return stringValue;
     }).join(',');
   });
-  
+
   return [headers, ...dataRows].join('\n');
 }
 
@@ -203,7 +204,7 @@ async function getTableStats() {
 async function main() {
   try {
     console.log('🔌 Тестируем подключение к базе данных...');
-    
+
     // Тестируем подключение
     const isConnected = await testConnection();
     if (!isConnected) {
@@ -219,7 +220,7 @@ async function main() {
     
     console.log('\n📤 Начинаем экспорт таблиц...');
     let totalExported = 0;
-    
+
     for (const table of exportTables) {
       const count = await exportTable(table);
       totalExported += count;
