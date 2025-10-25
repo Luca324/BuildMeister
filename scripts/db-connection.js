@@ -1,15 +1,10 @@
 import dotenv from 'dotenv'
-
 import fs from 'fs'
-
 import path from 'path'
-
 import { Pool } from 'pg'
-
 import { fileURLToPath } from 'url'
 
 import { logconnectionSetting, logError } from './utils/logs.js'
-
 import { setSslMode } from './utils/ssl_mode.js'
 // Загружаем переменные окружения из .env в корне проекта
 

@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 
 import fs from 'fs'
-
 import path from 'path'
-
 import { fileURLToPath } from 'url'
 
 import importTables from './constants/importTables.js'
-
 import { logImportStart } from './utils/logs.js'
-
 import { getConnection, testConnection } from './db-connection.js'
 
 const __filename = fileURLToPath(import.meta.url)

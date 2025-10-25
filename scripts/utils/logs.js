@@ -1,5 +1,4 @@
 import exportTables from '../constants/exportTables.js'
-
 import { getConnection } from '../db-connection.js'
 
 import logExportData from './logExportData.js'
