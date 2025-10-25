@@ -73,22 +73,6 @@ export default [
       'import/no-duplicates': 'error',
       'import/order': 'off', // Отключаем, так как используем simple-import-sort
       
-      // Правила для пустых строк
-      'padding-line-between-statements': [
-        'error',
-        // Пустая строка после последнего импорта
-        {
-          blankLine: 'always',
-          prev: 'import',
-          next: '*',
-        },
-        // Пустая строка после определения функций
-        {
-          blankLine: 'always',
-          prev: 'function',
-          next: '*',
-        },
-      ],
     },
   },
 ];

@@ -1,16 +1,11 @@
 #!/usr/bin/env node
 import fs from 'fs'
-
 import path from 'path'
-
 import { fileURLToPath } from 'url'
 
 import exportTables from './constants/exportTables.js'
-
 import { convertToCSV } from './utils/convertToCSV.js'
-
 import { logDBStats, logExportStart,logExportSuccess } from './utils/logs.js'
-
 import { getConnection } from './db-connection.js'
 
 // Путь для экспорта данных
