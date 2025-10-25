@@ -135,6 +135,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'admin_user_admin_user_id_seq',
 		truncate: true,
+		excludeColumns: ['admin_user_id'],
 	},
 	{
 		name: 'cart',
@@ -142,18 +143,21 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'cart_cart_id_seq',
 		truncate: true,
+		excludeColumns: ['cart_id'],
 	},
 	{
 		name: 'cart_address',
 		filename: 'cart_address.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['cart_address_id'],
 	},
 	{
 		name: 'cart_item',
 		filename: 'cart_item.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['cart_item_id'],
 	},
 	{
 		name: 'cms_page',
@@ -161,12 +165,14 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'cms_page_cms_page_id_seq',
 		truncate: true,
+		excludeColumns: ['cms_page_id'],
 	},
 	{
 		name: 'cms_page_description',
 		filename: 'cms_page_description.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['cms_page_description_id'],
 	},
 	{
 		name: 'coupon',
@@ -174,6 +180,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'coupon_coupon_id_seq',
 		truncate: true,
+		excludeColumns: ['coupon_id'],
 	},
 	{
 		name: 'customer',
@@ -181,12 +188,14 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'customer_customer_id_seq',
 		truncate: true,
+		excludeColumns: ['customer_id'],
 	},
 	{
 		name: 'customer_address',
 		filename: 'customer_address.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['customer_address_id'],
 	},
 	{
 		name: 'customer_group',
@@ -194,6 +203,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'customer_group_customer_group_id_seq',
 		truncate: true,
+		excludeColumns: ['customer_group_id'],
 	},
 	{
 		name: 'event',
@@ -201,6 +211,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'event_event_id_seq',
 		truncate: true,
+		excludeColumns: ['event_id'],
 	},
 	{
 		name: 'migration',
@@ -214,24 +225,28 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'order_order_id_seq',
 		truncate: true,
+		excludeColumns: ['order_id'],
 	},
 	{
 		name: 'order_activity',
 		filename: 'order_activity.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['order_activity_id'],
 	},
 	{
 		name: 'order_address',
 		filename: 'order_address.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['order_address_id'],
 	},
 	{
 		name: 'order_item',
 		filename: 'order_item.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['order_item_id'],
 	},
 	{
 		name: 'payment_transaction',
@@ -239,18 +254,21 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'payment_transaction_payment_transaction_id_seq',
 		truncate: true,
+		excludeColumns: ['payment_transaction_id'],
 	},
 	{
 		name: 'reset_password_token',
 		filename: 'reset_password_token.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['reset_password_token_id'],
 	},
 	{
 		name: 'session',
 		filename: 'session.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['session_id'],
 	},
 	{
 		name: 'shipment',
@@ -258,6 +276,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'shipment_shipment_id_seq',
 		truncate: true,
+		excludeColumns: ['shipment_id'],
 	},
 	{
 		name: 'shipping_method',
@@ -265,6 +284,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'shipping_method_shipping_method_id_seq',
 		truncate: true,
+		excludeColumns: ['shipping_method_id'],
 	},
 	{
 		name: 'shipping_zone',
@@ -272,18 +292,21 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'shipping_zone_shipping_zone_id_seq',
 		truncate: true,
+		excludeColumns: ['shipping_zone_id'],
 	},
 	{
 		name: 'shipping_zone_method',
 		filename: 'shipping_zone_method.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['shipping_zone_method_id'],
 	},
 	{
 		name: 'shipping_zone_province',
 		filename: 'shipping_zone_province.csv',
 		hasSequence: false,
 		truncate: true,
+		excludeColumns: ['shipping_zone_province_id'],
 	},
 	{
 		name: 'tax_class',
@@ -291,6 +314,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'tax_class_tax_class_id_seq',
 		truncate: true,
+		excludeColumns: ['tax_class_id'],
 	},
 	{
 		name: 'tax_rate',
@@ -298,6 +322,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'tax_rate_tax_rate_id_seq',
 		truncate: true,
+		excludeColumns: ['tax_rate_id'],
 	},
 	{
 		name: 'url_rewrite',
@@ -305,6 +330,7 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'url_rewrite_url_rewrite_id_seq',
 		truncate: true,
+		excludeColumns: ['url_rewrite_id'],
 	},
 	{
 		name: 'widget',
@@ -312,7 +338,8 @@ const importTables = [
 		hasSequence: true,
 		sequenceName: 'widget_widget_id_seq',
 		truncate: true,
+		excludeColumns: ['widget_id'],
 	},
 ]
 
-module.exports = importTables
+export default importTables
