@@ -1,4 +1,12 @@
-export function logExportData(totalExported, exportDir) {
+import fs from 'fs'
+
+import path from 'path'
+
+import { connectionSetting } from '../db-connection.js'
+
+import { logExportSuccess } from './logs.js'
+
+export default function logExportData(totalExported, exportDir, stats) {
 	// Создаем файл с метаинформацией
 	const metaInfo = {
 		exportDate: new Date().toISOString(),
