@@ -74,3 +74,48 @@ export function logImportStart(importDir) {
 	console.log('🚀 Начинаем импорт данных в EverShop БД...')
 	console.log(`📁 Директория импорта: ${importDir}`)
 }
+
+export async function logImportStats(importTables) {
+	// Получаем статистику до импорта
+	console.log('\n📈 Статистика данных в БД до импорта:')
+	const stats = await getImportTableStats(importTables)
+	Object.entries(stats).forEach(([table, count]) => {
+		console.log(`   ${table}: ${count} записей`)
+	})
+}
+
+export function logImportSuccess(totalImported, importDir) {
+	console.log('\n🎉 Импорт завершен успешно!')
+	console.log(`📊 Всего импортировано записей: ${totalImported}`)
+}
+
+export function logImportStatsAfter(statsAfter, statsBefore) {
+	// Получаем статистику после импорта
+	console.log('\n📈 Статистика данных в БД после импорта:')
+	Object.entries(statsAfter).forEach(([table, count]) => {
+		const before = statsBefore[table] || 0
+		const diff = count - before
+		console.log(`   ${table}: ${count} записей (${diff > 0 ? '+' : ''}${diff})`)
+	})
+}
+
+async function getImportTableStats(importTables) {
+	const stats = {}
+
+	for (const table of importTables) {
+		let client
+		try {
+			client = await getConnection()
+			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name}`)
+			stats[table.name] = parseInt(result.rows[0].count)
+		} catch (error) {
+			stats[table.name] = 0
+		} finally {
+			if (client) {
+				client.release()
+			}
+		}
+	}
+
+	return stats
+}
