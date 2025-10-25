@@ -27,7 +27,7 @@ const envSnapshot = {
 	DB_PASSWORD: process.env.DB_PASSWORD ? '***' : undefined,
 	DB_SSLMODE: process.env.DB_SSLMODE,
 }
-console.log('🔎 ENV переменные (частично замаскированы):', envSnapshot)
+// console.log('🔎 ENV переменные (частично замаскированы):', envSnapshot)
 
 // Функция для чтения конфигурации из config/default.json
 function getConfig(path, defaultValue = null) {

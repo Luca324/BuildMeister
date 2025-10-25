@@ -37,12 +37,7 @@ export async function importTable(tableConfig, importDir) {
 				}
 				return true
 			})
-
-			console.log(`   Исключены колонки: ${tableConfig.excludeColumns.join(', ')}`)
 		}
-
-		console.log(`   Заголовки для импорта: ${headers.join(', ')}`)
-		console.log(`   Количество строк для импорта: ${dataLines.length}`)
 
 		// Получаем соединение с БД
 		client = await getConnection()
