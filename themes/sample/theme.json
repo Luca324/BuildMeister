@@ -1,0 +1,22 @@
+{
+  "name": "sample",
+  "version": "1.0.0",
+  "description": "Sample theme with language switcher",
+  "author": "TechStore",
+  "license": "MIT",
+  "components": {
+    "pages": {
+      "all": [
+        "EveryWhere",
+        "HeaderLanguageSwitcher"
+      ],
+      "homepage": [
+        "OnlyHomePage"
+      ]
+    },
+    "components": [
+      "LanguageSwitcher"
+    ]
+  }
+}
+
