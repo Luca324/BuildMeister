@@ -146,7 +146,7 @@ const exportTables = [
 	},
 	{
 		name: 'order',
-		query: 'SELECT * FROM order',
+		query: 'SELECT * FROM "order"',
 		filename: 'order.csv',
 	},
 	{
