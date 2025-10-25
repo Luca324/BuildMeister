@@ -3,7 +3,6 @@ import path from 'path'
 
 import { connectionSetting } from '../db-connection.js'
 
-import { logExportSuccess } from './logs.js'
 
 export default function logExportData(totalExported, exportDir, stats) {
 	// Создаем файл с метаинформацией
@@ -18,5 +17,4 @@ export default function logExportData(totalExported, exportDir, stats) {
 
 	const metaPath = path.join(exportDir, 'export-info.json')
 	fs.writeFileSync(metaPath, JSON.stringify(metaInfo, null, 2), 'utf8')
-	logExportSuccess(totalExported, exportDir)
 }
