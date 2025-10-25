@@ -25,7 +25,6 @@ if (!fs.existsSync(exportDir)) {
 // Удаляем создание клиента - будем использовать getConnection()
 
 // Список таблиц для экспорта с их SQL запросами
-// Список таблиц для экспорта с их SQL запросами
 const exportTables = [
   {
     name: 'admin_user',
