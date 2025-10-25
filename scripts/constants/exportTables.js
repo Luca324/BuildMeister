@@ -89,4 +89,4 @@ const exportTables = [
 		query: 'SELECT * FROM product_custom_option_value',
 		filename: 'product_custom_option_values.csv',
 	},
-];
+]

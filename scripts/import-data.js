@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs'
 
-import { getConnection, testConnection } from './db-connection.js';
+import path from 'path'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { fileURLToPath } from 'url'
+
+import { getConnection, testConnection } from './db-connection.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Путь к данным для импорта
-const importDir = path.join(__dirname, '..', 'data-export');
+const importDir = path.join(__dirname, '..', 'data-export')
 
-console.log('🚀 Начинаем импорт данных в EverShop БД...');
-console.log(`📁 Директория импорта: ${importDir}`);
+console.log('🚀 Начинаем импорт данных в EverShop БД...')
+console.log(`📁 Директория импорта: ${importDir}`)
 
 // Проверяем существование директории с данными
 if (!fs.existsSync(importDir)) {
-	console.error(`❌ Директория с данными не найдена: ${importDir}`);
-	console.error('💡 Сначала выполните экспорт данных командой: npm run db:export');
-	process.exit(1);
+	console.error(`❌ Директория с данными не найдена: ${importDir}`)
+	console.error('💡 Сначала выполните экспорт данных командой: npm run db:export')
+	process.exit(1)
 }
 
 // Список таблиц для импорта в правильном порядке (с учетом зависимостей)
@@ -153,191 +155,191 @@ const importTables = [
 		truncate: true,
 		excludeColumns: ['product_custom_option_value_id'],
 	},
-];
+]
 
 async function truncateTable(tableName, client) {
 	try {
-		await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`);
-		console.log(`🗑️  Очищена таблица: ${tableName}`);
+		await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`)
+		console.log(`🗑️  Очищена таблица: ${tableName}`)
 	} catch (error) {
-		console.warn(`⚠️  Не удалось очистить таблицу ${tableName}:`, error.message);
+		console.warn(`⚠️  Не удалось очистить таблицу ${tableName}:`, error.message)
 	}
 }
 
 async function importTable(tableConfig) {
-	const filePath = path.join(importDir, tableConfig.filename);
-	let client;
+	const filePath = path.join(importDir, tableConfig.filename)
+	let client
 
 	if (!fs.existsSync(filePath)) {
-		console.log(`⚠️  Файл ${tableConfig.filename} не найден, пропускаем...`);
-		return 0;
+		console.log(`⚠️  Файл ${tableConfig.filename} не найден, пропускаем...`)
+		return 0
 	}
 
 	try {
-		console.log(`📥 Импортируем таблицу: ${tableConfig.name}...`);
+		console.log(`📥 Импортируем таблицу: ${tableConfig.name}...`)
 
 		// Читаем CSV файл
-		const csvContent = fs.readFileSync(filePath, 'utf8');
-		const lines = csvContent.trim().split('\n');
+		const csvContent = fs.readFileSync(filePath, 'utf8')
+		const lines = csvContent.trim().split('\n')
 
 		if (lines.length <= 1) {
-			console.log(`⚠️  Файл ${tableConfig.filename} пустой или содержит только заголовки`);
-			return 0;
+			console.log(`⚠️  Файл ${tableConfig.filename} пустой или содержит только заголовки`)
+			return 0
 		}
 
 		// Получаем заголовки
-		let headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-		const dataLines = lines.slice(1);
+		let headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+		const dataLines = lines.slice(1)
 
 		if (dataLines.length === 0) {
-			console.log(`⚠️  Нет данных для импорта в ${tableConfig.filename}`);
-			return 0;
+			console.log(`⚠️  Нет данных для импорта в ${tableConfig.filename}`)
+			return 0
 		}
 
 		// Исключаем колонки которые не нужно импортировать
 		if (tableConfig.excludeColumns) {
-			const excludeIndexes = [];
+			const excludeIndexes = []
 			headers = headers.filter((header, index) => {
 				if (tableConfig.excludeColumns.includes(header)) {
-					excludeIndexes.push(index);
-					return false;
+					excludeIndexes.push(index)
+					return false
 				}
-				return true;
-			});
+				return true
+			})
 
-			console.log(`   Исключены колонки: ${tableConfig.excludeColumns.join(', ')}`);
+			console.log(`   Исключены колонки: ${tableConfig.excludeColumns.join(', ')}`)
 		}
 
-		console.log(`   Заголовки для импорта: ${headers.join(', ')}`);
-		console.log(`   Количество строк для импорта: ${dataLines.length}`);
+		console.log(`   Заголовки для импорта: ${headers.join(', ')}`)
+		console.log(`   Количество строк для импорта: ${dataLines.length}`)
 
 		// Получаем соединение с БД
-		client = await getConnection();
+		client = await getConnection()
 
 		// Очищаем таблицу если нужно
 		if (tableConfig.truncate) {
-			await truncateTable(tableConfig.name, client);
+			await truncateTable(tableConfig.name, client)
 		}
 
 		// Подготавливаем данные для вставки
-		const values = [];
-		const placeholders = [];
+		const values = []
+		const placeholders = []
 
 		dataLines.forEach((line, lineIndex) => {
-			let rowValues = parseCSVLine(line);
+			let rowValues = parseCSVLine(line)
 
 			// Исключаем значения для исключенных колонок
 			if (tableConfig.excludeColumns) {
-				const excludeIndexes = [];
-				const originalHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+				const excludeIndexes = []
+				const originalHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
 				originalHeaders.forEach((header, index) => {
 					if (tableConfig.excludeColumns.includes(header)) {
-						excludeIndexes.push(index);
+						excludeIndexes.push(index)
 					}
-				});
+				})
 
-				rowValues = rowValues.filter((_, index) => !excludeIndexes.includes(index));
+				rowValues = rowValues.filter((_, index) => !excludeIndexes.includes(index))
 			}
 
 			if (rowValues.length !== headers.length) {
-				console.warn(`⚠️  Строка ${lineIndex + 2} имеет неправильное количество полей (${rowValues.length} вместо ${headers.length}), пропускаем...`);
-				return;
+				console.warn(`⚠️  Строка ${lineIndex + 2} имеет неправильное количество полей (${rowValues.length} вместо ${headers.length}), пропускаем...`)
+				return
 			}
 
-			const rowPlaceholders = headers.map((_, index) => `$${values.length + index + 1}`);
-			placeholders.push(`(${rowPlaceholders.join(', ')})`);
-			values.push(...rowValues);
-		});
+			const rowPlaceholders = headers.map((_, index) => `$${values.length + index + 1}`)
+			placeholders.push(`(${rowPlaceholders.join(', ')})`)
+			values.push(...rowValues)
+		})
 
 		if (values.length === 0) {
-			console.log(`⚠️  Нет валидных данных для импорта в ${tableConfig.filename}`);
-			return 0;
+			console.log(`⚠️  Нет валидных данных для импорта в ${tableConfig.filename}`)
+			return 0
 		}
 
 		// Выполняем вставку
 		const insertQuery = `
       INSERT INTO ${tableConfig.name} (${headers.join(', ')})
       VALUES ${placeholders.join(', ')}
-    `;
+    `
 
-		const result = await client.query(insertQuery, values);
+		const result = await client.query(insertQuery, values)
 
-		console.log(`✅ ${tableConfig.name}: импортировано ${dataLines.length} записей`);
+		console.log(`✅ ${tableConfig.name}: импортировано ${dataLines.length} записей`)
 
 		// Обновляем последовательность если нужно
 		if (tableConfig.hasSequence && tableConfig.sequenceName) {
-			await updateSequence(tableConfig.sequenceName, tableConfig.name, client);
+			await updateSequence(tableConfig.sequenceName, tableConfig.name, client)
 		}
 
-		return dataLines.length;
+		return dataLines.length
 
 	} catch (error) {
-		console.error(`❌ Ошибка при импорте таблицы ${tableConfig.name}:`, error.message);
+		console.error(`❌ Ошибка при импорте таблицы ${tableConfig.name}:`, error.message)
 		if (error.query) {
-			console.error(`   SQL: ${error.query}`);
+			console.error(`   SQL: ${error.query}`)
 		}
-		throw error;
+		throw error
 	} finally {
 		if (client) {
-			client.release();
+			client.release()
 		}
 	}
 }
 
 function parseCSVLine(line) {
-	const values = [];
-	let current = '';
-	let inQuotes = false;
+	const values = []
+	let current = ''
+	let inQuotes = false
 
 	for (let i = 0; i < line.length; i++) {
-		const char = line[i];
+		const char = line[i]
 
 		if (char === '"') {
 			if (inQuotes && line[i + 1] === '"') {
 				// Экранированная кавычка
-				current += '"';
-				i++; // Пропускаем следующую кавычку
+				current += '"'
+				i++ // Пропускаем следующую кавычку
 			} else {
 				// Начало или конец строки в кавычках
-				inQuotes = !inQuotes;
+				inQuotes = !inQuotes
 			}
 		} else if (char === ',' && !inQuotes) {
-			values.push(current);
-			current = '';
+			values.push(current)
+			current = ''
 		} else {
-			current += char;
+			current += char
 		}
 	}
 
-	values.push(current);
+	values.push(current)
 
 	// Очищаем значения от лишних кавычек и пробелов
 	return values.map(val => {
-		let cleaned = val.trim();
+		let cleaned = val.trim()
 		// Убираем окружающие кавычки если есть
 		if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-			cleaned = cleaned.slice(1, -1);
+			cleaned = cleaned.slice(1, -1)
 		}
 		// Заменяем двойные кавычки на одинарные
-		cleaned = cleaned.replace(/""/g, '"');
+		cleaned = cleaned.replace(/""/g, '"')
 		// Обрабатываем пустые значения
 		if (cleaned === '' || cleaned === 'NULL') {
-			return null;
+			return null
 		}
-		return cleaned;
-	});
+		return cleaned
+	})
 }
 
 async function updateSequence(sequenceName, tableName, client) {
 	try {
-		const primaryKeyColumn = getPrimaryKeyColumn(tableName);
+		const primaryKeyColumn = getPrimaryKeyColumn(tableName)
 		const query = `
       SELECT setval('${sequenceName}', COALESCE((SELECT MAX(${primaryKeyColumn}) FROM ${tableName}), 1), true)
-    `;
-		await client.query(query);
-		console.log(`🔄 Обновлена последовательность: ${sequenceName}`);
+    `
+		await client.query(query)
+		console.log(`🔄 Обновлена последовательность: ${sequenceName}`)
 	} catch (error) {
-		console.warn(`⚠️  Не удалось обновить последовательность ${sequenceName}:`, error.message);
+		console.warn(`⚠️  Не удалось обновить последовательность ${sequenceName}:`, error.message)
 	}
 }
 
@@ -354,103 +356,103 @@ function getPrimaryKeyColumn(tableName) {
 		'product': 'product_id',
 		'product_custom_option': 'product_custom_option_id',
 		'product_custom_option_value': 'product_custom_option_value_id',
-	};
+	}
 
-	return keyMap[tableName] || `${tableName.split('_')[0]}_id`;
+	return keyMap[tableName] || `${tableName.split('_')[0]}_id`
 }
 
 async function getTableStats() {
-	const stats = {};
+	const stats = {}
 
 	for (const table of importTables) {
-		let client;
+		let client
 		try {
-			client = await getConnection();
-			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name}`);
-			stats[table.name] = parseInt(result.rows[0].count);
+			client = await getConnection()
+			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name}`)
+			stats[table.name] = parseInt(result.rows[0].count)
 		} catch (error) {
-			stats[table.name] = 0;
+			stats[table.name] = 0
 		} finally {
 			if (client) {
-				client.release();
+				client.release()
 			}
 		}
 	}
 
-	return stats;
+	return stats
 }
 
 async function readExportInfo() {
-	const infoPath = path.join(importDir, 'export-info.json');
+	const infoPath = path.join(importDir, 'export-info.json')
 
 	if (!fs.existsSync(infoPath)) {
-		console.warn('⚠️  Файл export-info.json не найден');
-		return null;
+		console.warn('⚠️  Файл export-info.json не найден')
+		return null
 	}
 
 	try {
-		const content = fs.readFileSync(infoPath, 'utf8');
-		return JSON.parse(content);
+		const content = fs.readFileSync(infoPath, 'utf8')
+		return JSON.parse(content)
 	} catch (error) {
-		console.warn('⚠️  Не удалось прочитать export-info.json:', error.message);
-		return null;
+		console.warn('⚠️  Не удалось прочитать export-info.json:', error.message)
+		return null
 	}
 }
 
 async function main() {
 	try {
-		console.log('🔌 Тестируем подключение к базе данных...');
+		console.log('🔌 Тестируем подключение к базе данных...')
 
 		// Тестируем подключение
-		const isConnected = await testConnection();
+		const isConnected = await testConnection()
 		if (!isConnected) {
-			process.exit(1);
+			process.exit(1)
 		}
 
 		// Читаем информацию об экспорте
-		const exportInfo = await readExportInfo();
+		const exportInfo = await readExportInfo()
 		if (exportInfo) {
-			console.log(`📅 Дата экспорта: ${exportInfo.exportDate}`);
-			console.log(`🗄️  Исходная БД: ${exportInfo.database}@${exportInfo.host}:${exportInfo.port}`);
+			console.log(`📅 Дата экспорта: ${exportInfo.exportDate}`)
+			console.log(`🗄️  Исходная БД: ${exportInfo.database}@${exportInfo.host}:${exportInfo.port}`)
 		}
 
 		// Получаем статистику до импорта
-		console.log('\n📈 Статистика данных в БД до импорта:');
-		const statsBefore = await getTableStats();
+		console.log('\n📈 Статистика данных в БД до импорта:')
+		const statsBefore = await getTableStats()
 		Object.entries(statsBefore).forEach(([table, count]) => {
-			console.log(`   ${table}: ${count} записей`);
-		});
+			console.log(`   ${table}: ${count} записей`)
+		})
 
-		console.log('\n📤 Начинаем импорт таблиц...');
-		let totalImported = 0;
+		console.log('\n📤 Начинаем импорт таблиц...')
+		let totalImported = 0
 
 		for (const table of importTables) {
-			const count = await importTable(table);
-			totalImported += count;
+			const count = await importTable(table)
+			totalImported += count
 		}
 
 		// Получаем статистику после импорта
-		console.log('\n📈 Статистика данных в БД после импорта:');
-		const statsAfter = await getTableStats();
+		console.log('\n📈 Статистика данных в БД после импорта:')
+		const statsAfter = await getTableStats()
 		Object.entries(statsAfter).forEach(([table, count]) => {
-			const before = statsBefore[table] || 0;
-			const diff = count - before;
-			console.log(`   ${table}: ${count} записей (${diff > 0 ? '+' : ''}${diff})`);
-		});
+			const before = statsBefore[table] || 0
+			const diff = count - before
+			console.log(`   ${table}: ${count} записей (${diff > 0 ? '+' : ''}${diff})`)
+		})
 
-		console.log('\n🎉 Импорт завершен успешно!');
-		console.log(`📊 Всего импортировано записей: ${totalImported}`);
+		console.log('\n🎉 Импорт завершен успешно!')
+		console.log(`📊 Всего импортировано записей: ${totalImported}`)
 
 	} catch (error) {
-		console.error('❌ Ошибка при импорте данных:', error.message);
-		process.exit(1);
+		console.error('❌ Ошибка при импорте данных:', error.message)
+		process.exit(1)
 	}
 }
 
 // Обработка сигналов для корректного завершения
 process.on('SIGINT', async () => {
-	console.log('\n⏹️  Получен сигнал прерывания, завершаем работу...');
-	process.exit(0);
-});
+	console.log('\n⏹️  Получен сигнал прерывания, завершаем работу...')
+	process.exit(0)
+})
 
-main();
+main()

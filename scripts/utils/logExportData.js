@@ -7,9 +7,9 @@ export function logExportData(totalExported, exportDir) {
 		port: connectionSetting.port,
 		tables: stats,
 		totalRecords: totalExported,
-	};
+	}
 
-	const metaPath = path.join(exportDir, 'export-info.json');
-	fs.writeFileSync(metaPath, JSON.stringify(metaInfo, null, 2), 'utf8');
-	logExportSuccess(totalExported, exportDir);
+	const metaPath = path.join(exportDir, 'export-info.json')
+	fs.writeFileSync(metaPath, JSON.stringify(metaInfo, null, 2), 'utf8')
+	logExportSuccess(totalExported, exportDir)
 }

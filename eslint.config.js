@@ -26,13 +26,12 @@ export default [
       ...js.configs.recommended.rules,
       
       // Базовые правила форматирования
-      'no-console': ['warn', { allow: ['error', 'warn'] }],
       'indent': ['error', 'tab'],
       'no-mixed-spaces-and-tabs': 'error',
       'no-trailing-spaces': 'error',
       'eol-last': 'error',
       'comma-dangle': ['error', 'always-multiline'],
-      'semi': ['error', 'always'],
+      'semi': ['error', 'never'],
       'quotes': ['error', 'single', { avoidEscape: true }],
       
       // Правила для неиспользуемых переменных и импортов
@@ -73,6 +72,23 @@ export default [
       'import/no-unresolved': 'error',
       'import/no-duplicates': 'error',
       'import/order': 'off', // Отключаем, так как используем simple-import-sort
+      
+      // Правила для пустых строк
+      'padding-line-between-statements': [
+        'error',
+        // Пустая строка после последнего импорта
+        {
+          blankLine: 'always',
+          prev: 'import',
+          next: '*',
+        },
+        // Пустая строка после определения функций
+        {
+          blankLine: 'always',
+          prev: 'function',
+          next: '*',
+        },
+      ],
     },
   },
 ];
