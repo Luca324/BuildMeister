@@ -47,10 +47,8 @@ export async function importTable(tableConfig, importDir) {
 		// Получаем соединение с БД
 		client = await getConnection()
 
-		// Очищаем таблицу если нужно
-		if (tableConfig.truncate) {
-			await truncateTable(tableConfig.name, client)
-		}
+		// Очищаем таблицу перед импортом
+		await truncateTable(tableConfig.name, client)
 
 		// Подготавливаем данные для вставки
 		const values = []
