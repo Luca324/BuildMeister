@@ -1,4 +1,8 @@
-export function setSslMode(sslMode, connectionSetting) {
+import fs from 'fs'
+
+import { connectionSetting } from '../db-connection.js'
+
+export default function setSslMode(sslMode) {
 	switch (sslMode) {
 	case 'disable': {
 		connectionSetting.ssl = false
