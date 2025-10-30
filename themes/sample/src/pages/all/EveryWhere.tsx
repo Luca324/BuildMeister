@@ -1,14 +1,8 @@
 import React from 'react';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 export default function EveryWhere() {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-10">
-      {/* Переключатель языков в верхней части */}
-      <div className="flex justify-end mb-4">
-        <LanguageSwitcher />
-      </div>
-      
       <h1 className="font-bold text-center mb-6">Everywhere</h1>
       <p className="text-gray-700 text-center">
         This component is rendered on every page of the store front.

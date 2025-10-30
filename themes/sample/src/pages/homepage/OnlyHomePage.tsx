@@ -1,14 +1,8 @@
 import React from 'react';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 export default function OnlyHomePage() {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-100 rounded-lg shadow-md mt-10">
-      {/* Переключатель языков */}
-      <div className="flex justify-end mb-4">
-        <LanguageSwitcher />
-      </div>
-      
       <h1 className="font-bold text-center mb-6">Home Page Only</h1>
       <p className=" text-gray-700 text-center">
         This component is only rendered on the home page.
