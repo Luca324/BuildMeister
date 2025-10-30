@@ -104,14 +104,14 @@ const importTables = [
 		filename: 'product_collections.csv',
 		hasSequence: false,
 		truncate: true,
-		// Для связующих таблиц оставляем ID, так как они обычно не автоинкрементные
+		excludeColumns: ['product_collection_id'],
 	},
 	{
 		name: 'product_attribute_value_index',
 		filename: 'product_attribute_values.csv',
 		hasSequence: false,
 		truncate: true,
-		// Для связующих таблиц оставляем ID
+		excludeColumns: ['product_attribute_value_index_id'],
 	},
 	{
 		name: 'product_custom_option',

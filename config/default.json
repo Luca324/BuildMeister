@@ -1,6 +1,6 @@
 {
   "shop": {
-    "name": "TechStore Norge - Elektronikkbutikk",
+    "name": "BuildMeister - Elektronikkbutikk",
     "description": "Din pålitelige leverandør av datamaskiner, komponenter og tilbehør i Norge",
     "currency": "NOK",
     "language": "no",
@@ -66,12 +66,12 @@
   },
   "themeConfig": {
     "logo": {
-      "alt": "TechStore Norge - Elektronikkbutikk",
+      "alt": "BuildMeister",
       "src": "/techstore-logo.png",
       "width": 180,
       "height": 60
     },
-    "copyRight": "© 2024 TechStore Norge. Alle rettigheter reservert.",
+    "copyRight": "© 2024 BuildMeister. Alle rettigheter reservert.",
     "headTags": {
       "links": [
         {
@@ -82,7 +82,7 @@
       "metas": [
         {
           "name": "description",
-          "content": "TechStore Norge - Din pålitelige leverandør av datamaskiner, komponenter og elektronikktilbehør. Fri frakt over 1000 kr!"
+          "content": "BuildMeister - Din pålitelige leverandør av datamaskiner, komponenter og elektronikktilbehør. Fri frakt over 1000 kr!"
         },
         {
           "name": "keywords",
