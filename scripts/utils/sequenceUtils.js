@@ -46,10 +46,37 @@ export async function updateSequence(sequenceName, tableName, client) {
 }
 
 export async function truncateTable(tableName, client) {
+	// Таблицы, которые необходимо всегда очищать с CASCADE из-за рекурсивных связей
+	const alwaysCascadeTables = ['category', 'product', 'attribute', 'attribute_group', 'collection', 'tax_class']
+	
 	try {
-		await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`)
-		console.log(`🗑️  Очищена таблица: ${tableName}`)
+		if (alwaysCascadeTables.includes(tableName)) {
+			// Для этих таблиц всегда используем CASCADE
+			await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`)
+			console.log(`🗑️  Очищена таблица: ${tableName} (CASCADE)`)
+		} else {
+			// Сначала пытаемся очистить без CASCADE
+			await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY`)
+			console.log(`🗑️  Очищена таблица: ${tableName}`)
+		}
 	} catch (error) {
-		console.warn(`⚠️  Не удалось очистить таблицу ${tableName}:`, error.message)
+		if (error.message.includes('external') || error.message.includes('foreign key')) {
+			// Если есть внешние ключи, очищаем с CASCADE
+			try {
+				await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`)
+				console.log(`🗑️  Очищена таблица: ${tableName} (CASCADE)`)
+			} catch (cascadeError) {
+				console.warn(`⚠️  Не удалось очистить таблицу ${tableName}:`, cascadeError.message)
+			}
+		} else {
+			console.warn(`⚠️  Не удалось очистить таблицу ${tableName}:`, error.message)
+		}
 	}
+}
+
+// Функция для очистки связанных таблиц перед очисткой родительской
+export async function truncateRelatedTables(tableName, client) {
+	// Эта функция НЕ должна вызывать truncateTable для связанных таблиц,
+	// так как они будут очищены CASCADE при очистке родительской таблицы
+	// Оставляем пустой для совместимости
 }
