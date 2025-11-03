@@ -30,19 +30,19 @@ export function parseCSVLine(line) {
 	// Очищаем значения от лишних кавычек и пробелов
 	return values.map(val => {
 		let cleaned = val.trim()
-		
-		// Для JSON полей (которые содержат сложные структуры) 
+
+		// Для JSON полей (которые содержат сложные структуры)
 		// не удаляем кавычки, так как они могут быть частью JSON
 		if (cleaned.startsWith('"') && cleaned.endsWith('"') && !cleaned.includes('{')) {
 			// Обычные строковые поля - убираем окружающие кавычки
 			cleaned = cleaned.slice(1, -1)
 		}
-		
+
 		// Заменяем двойные кавычки на одинарные только для обычных строк
 		if (!cleaned.includes('{') && !cleaned.includes('[')) {
 			cleaned = cleaned.replace(/""/g, '"')
 		}
-		
+
 		// Обрабатываем пустые значения
 		if (cleaned === '' || cleaned === 'NULL') {
 			return null
