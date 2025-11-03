@@ -48,7 +48,7 @@ export async function updateSequence(sequenceName, tableName, client) {
 export async function truncateTable(tableName, client) {
 	// Таблицы, которые необходимо всегда очищать с CASCADE из-за рекурсивных связей
 	const alwaysCascadeTables = ['category', 'product', 'attribute', 'attribute_group', 'collection', 'tax_class']
-	
+
 	try {
 		if (alwaysCascadeTables.includes(tableName)) {
 			// Для этих таблиц всегда используем CASCADE
