@@ -4,7 +4,7 @@ import path from 'path'
 import { getConnection } from '../db-connection.js'
 
 import { parseCSVFile,parseCSVLine } from './parseCSV.js'
-import { truncateTable, updateSequence } from './sequenceUtils.js'
+import { truncateTable, updateSequence, truncateRelatedTables } from './sequenceUtils.js'
 
 export async function importTable(tableConfig, importDir) {
 	const filePath = path.join(importDir, tableConfig.filename)
