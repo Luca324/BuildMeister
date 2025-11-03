@@ -48,6 +48,7 @@ export async function importTable(tableConfig, importDir) {
 		// Подготавливаем данные для вставки
 		const values = []
 		const placeholders = []
+		let skippedRows = 0
 
 		dataLines.forEach((line, lineIndex) => {
 			let rowValues = parseCSVLine(line)
@@ -66,6 +67,7 @@ export async function importTable(tableConfig, importDir) {
 
 			if (rowValues.length !== headers.length) {
 				console.warn(`⚠️  Строка ${lineIndex + 2} имеет неправильное количество полей (${rowValues.length} вместо ${headers.length}), пропускаем...`)
+				skippedRows++
 				return
 			}
 
@@ -73,6 +75,10 @@ export async function importTable(tableConfig, importDir) {
 			placeholders.push(`(${rowPlaceholders.join(', ')})`)
 			values.push(...rowValues)
 		})
+
+		if (skippedRows > 0) {
+			console.warn(`⚠️  Пропущено ${skippedRows} строк из-за ошибок валидации`)
+		}
 
 		if (values.length === 0) {
 			console.log(`⚠️  Нет валидных данных для импорта в ${tableConfig.filename}`)
@@ -86,20 +92,38 @@ export async function importTable(tableConfig, importDir) {
     `
 
 		const result = await client.query(insertQuery, values)
+		const insertedCount = result.rowCount || 0
 
-		console.log(`✅ ${tableConfig.name}: импортировано ${dataLines.length} записей`)
+		// Рассчитываем ожидаемое количество с учетом пропущенных строк
+		const expectedCount = dataLines.length - skippedRows
+
+		// Проверяем, что все строки были вставлены
+		if (insertedCount !== expectedCount) {
+			console.warn(`⚠️  ${tableConfig.name}: ожидалось вставить ${expectedCount} записей, но вставлено только ${insertedCount}`)
+		}
+
+		console.log(`✅ ${tableConfig.name}: импортировано ${insertedCount} записей`)
 
 		// Обновляем последовательность если нужно
 		if (tableConfig.hasSequence && tableConfig.sequenceName) {
 			await updateSequence(tableConfig.sequenceName, tableConfig.name, client)
 		}
 
-		return dataLines.length
+		return insertedCount
 
 	} catch (error) {
 		console.error(`❌ Ошибка при импорте таблицы ${tableConfig.name}:`, error.message)
 		if (error.query) {
 			console.error(`   SQL: ${error.query}`)
+		}
+		if (error.detail) {
+			console.error(`   Детали: ${error.detail}`)
+		}
+		if (error.hint) {
+			console.error(`   Подсказка: ${error.hint}`)
+		}
+		if (error.code) {
+			console.error(`   Код ошибки: ${error.code}`)
 		}
 		throw error
 	} finally {

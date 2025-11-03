@@ -19,7 +19,7 @@ services:
     volumes:
       - ./data-export:/app/data-export:rw # чтобы изменения в этой папке отображались в контейнере без пересборки
       - ./config:/app/config:rw 
-      # - ./scripts:/app/scripts:rw 
+      - ./scripts:/app/scripts:rw 
       # - ./extensions:/app/extensions:rw 
       # - ./extensions:/app/scripts/migrate.sh:rw 
   
