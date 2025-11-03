@@ -31,9 +31,7 @@ async function main() {
 
 		// Тестируем подключение
 		const isConnected = await testConnection()
-		if (!isConnected) {
-			process.exit(1)
-		}
+		if (!isConnected) process.exit(1)
 
 		// Читаем информацию об экспорте
 		const exportInfo = await readExportInfo(importDir)
