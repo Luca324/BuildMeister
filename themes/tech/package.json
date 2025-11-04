@@ -10,8 +10,5 @@
   },
   "keywords": [],
   "author": "Tatyana",
-  "license": "ISC",
-  "dependencies": {
-    "@evershop/evershop": "^1.0.0"
-  }
+  "license": "ISC"
 }
