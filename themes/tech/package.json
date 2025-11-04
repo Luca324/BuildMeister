@@ -1,0 +1,17 @@
+{
+  "name": "tech-theme",
+  "version": "1.0.0",
+  "description": "My custom theme for Evershop. for tech store",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc && copyfiles -u 1 \"src/**/*.{graphql,scss,json}\" dist",
+    "tsc": "tsc"
+  },
+  "keywords": [],
+  "author": "Tatyana",
+  "license": "ISC",
+  "dependencies": {
+    "@evershop/evershop": "^1.0.0"
+  }
+}

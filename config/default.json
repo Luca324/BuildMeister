@@ -52,7 +52,7 @@
     }
   },
   "system": {
-    "theme": "sample"
+    "theme": "tech"
   },
   "pricing": {
     "rounding": "round",
@@ -67,9 +67,9 @@
   "themeConfig": {
     "logo": {
       "alt": "BuildMeister",
-      "src": "/techstore-logo.png",
+      "src": "/logo.png",
       "width": 180,
-      "height": 60
+      "height": 180
     },
     "copyRight": "© 2024 BuildMeister. Alle rettigheter reservert.",
     "headTags": {
@@ -77,6 +77,18 @@
         {
           "rel": "icon",
           "href": "/favicon.ico"
+        },
+        {
+          "rel": "image",
+          "href": "/logo.png" 
+        },
+        {
+          "rel": "stylesheet",
+          "href": "/custom.css" 
+        },
+        {
+          "rel": "script",
+          "href": "/custom.js" 
         }
       ],
       "metas": [

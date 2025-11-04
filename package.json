@@ -17,6 +17,7 @@
   "dependencies": {
     "@evershop/evershop": "2.0.1"
   },
+  "workspaces": ["themes/*"],
   "devDependencies": {
     "@parcel/watcher": "2.5.1",
     "@types/config": "3.3.5",
