@@ -1,4 +1,4 @@
 /extensions
 /node_modules
 /.evershop
-/themes/sample/dist
+**/dist/
