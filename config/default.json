@@ -52,7 +52,15 @@
     }
   },
   "system": {
-    "theme": "tech"
+    "theme": "tech",
+    "extensions": [
+      {
+        "name": "greeting_widget",
+        "resolve": "extensions/greeting_widget",
+        "enabled": true,
+        "priority": 20
+      }
+    ]
   },
   "pricing": {
     "rounding": "round",

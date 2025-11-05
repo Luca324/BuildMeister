@@ -1,0 +1,12 @@
+"""
+A widget that displays a greeting message
+"""
+type GreetingWidget {
+  text: String
+  className: String
+}
+
+extend type Query {
+  greetingWidget(settings: JSON): GreetingWidget
+}
+
