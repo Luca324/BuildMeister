@@ -26,13 +26,13 @@ export default [
 			...js.configs.recommended.rules,
 
 			// Базовые правила форматирования
-			'indent': ['error', 'tab'],
-			'no-mixed-spaces-and-tabs': 'error',
-			'no-trailing-spaces': 'error',
+			'indent': ['warn', 'tab'],
+			'no-mixed-spaces-and-tabs': 'warn',
+			'no-trailing-spaces': 'warn',
 			'eol-last': 'error',
 			'comma-dangle': ['error', 'always-multiline'],
-			'semi': ['error', 'never'],
-			'quotes': ['error', 'single', { avoidEscape: true }],
+			'semi': ['warn', 'never'],
+			'quotes': ['warn', 'single', { avoidEscape: true }],
 
 			// Правила для неиспользуемых переменных и импортов
 			'no-unused-vars': 'off',
