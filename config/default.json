@@ -59,6 +59,12 @@
         "resolve": "extensions/greeting_widget",
         "enabled": true,
         "priority": 20
+      },
+      {
+        "name": "categories_widget",
+        "resolve": "extensions/categories_widget",
+        "enabled": true,
+        "priority": 20
       }
     ]
   },
