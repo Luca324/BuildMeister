@@ -1,0 +1,11 @@
+"""
+A widget that displays selected categories
+"""
+type CategoriesWidget {
+  categories: [String]
+}
+
+extend type Query {
+  categoriesWidget(settings: JSON): CategoriesWidget
+}
+

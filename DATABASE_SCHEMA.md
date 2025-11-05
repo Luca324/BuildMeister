@@ -737,3 +737,4 @@ VALUES (LAST_INSERT_ID(), '/images/laptop.jpg', 1);
 
 
 
+
