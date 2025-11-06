@@ -20,7 +20,7 @@ interface CategoriesWidgetProps {
 export default function CategoriesWidget({
   categories,
 }: CategoriesWidgetProps) {
-  console.log('CategoriesWidget rendered*', { categories });
+  console.log('CategoriesWidget rendered**', { categories });
   
   // categories может быть объектом с items или массивом
   const categoriesList = Array.isArray(categories) 
@@ -71,9 +71,9 @@ export default function CategoriesWidget({
                 )}
               </div>
               <div className="p-3 text-center">
-                <h4 className="font-semibold text-sm hover:text-primary line-clamp-2">
+                <span className="font-semibold hover:text-primary line-clamp-2">
                   {category.name}
-                </h4>
+                </span>
               </div>
             </a>
           ))}
