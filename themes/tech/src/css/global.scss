@@ -5,7 +5,10 @@ html body {
 }
 .product-thumbnail-listing {
   position: relative; /* добавляем для правильного позиционирования */
-    overflow: hidden; /* скрываем выходящие за границы части изображения */
+  overflow: hidden; /* скрываем выходящие за границы части изображения */
+  min-height: 14rem;
+  background-color: #f6f6f6;
+  border-radius: 0.5rem;
 }
 .product-thumbnail-listing img {
   width: 100% !important;
@@ -16,16 +19,42 @@ html body {
   left: 0 !important;
 }
 
-/* Overrides: Category header layout (title left, image right) */
-.category__general {
+.listing-tem,
+.listing-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: #fff;
+  padding: 1.6rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  height: 100%;
 }
+
+.listing-tem:hover,
+.listing-item:hover {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-4px);
+}
+
+.categories__widget .category-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: #fff;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.categories__widget .category-card:hover {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-4px);
+}
+
+/* Overrides: Category header layout (title left, image right) */
 .category__general .category__image + .category__info {
   position: static !important;
 }
+
 .category__general .category__image {
-    display: none !important;
-}
-@media (max-width: 767.98px) {
-  .category__general {
-  }
+  display: none !important;
 }
