@@ -97,10 +97,6 @@
           "href": "/logo.png" 
         },
         {
-          "rel": "stylesheet",
-          "href": "/custom.css" 
-        },
-        {
           "rel": "script",
           "href": "/custom.js" 
         }
