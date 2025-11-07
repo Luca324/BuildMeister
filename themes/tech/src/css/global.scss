@@ -15,3 +15,17 @@ html body {
   top: 0 !important;
   left: 0 !important;
 }
+
+/* Overrides: Category header layout (title left, image right) */
+.category__general {
+}
+.category__general .category__image + .category__info {
+  position: static !important;
+}
+.category__general .category__image {
+    display: none !important;
+}
+@media (max-width: 767.98px) {
+  .category__general {
+  }
+}
