@@ -1,0 +1,87 @@
+attribute_id,uuid,attribute_code,attribute_name,type,is_required,display_on_frontend,sort_order,is_filterable
+2,4acbf5b2-e971-4186-a280-da3a54d1e9d1,tilstand,tilstand,select,false,true,2,true
+3,6b8d45e1-c2f3-4a7d-b5f8-9e1c34d2a7f3,status,status,select,false,true,3,true
+5,3c5e67f9-b1d2-4c8a-9e3f-5d7a8b2c4e6d,produkttype,produkttype,select,false,true,5,true
+6,7d8e45a2-b3c1-4f6a-9e5d-1c7f8a3b4e6c,kapasitet,kapasitet,select,false,true,6,true
+8,5e7c9a2b-d4f6-8e1c-3b5a-7f9c1e4b6d8a,formfaktor,produktformfaktor,select,false,true,8,true
+1,18ada886-870c-452f-89e5-68c5910cd222,garanti,garanti (måneder),select,false,true,1,true
+4,9a2e47b8-d3c1-4e6a-8f5b-2c8d6e4f7a1c,produktnummer,produktnummer,text,false,true,4,false
+7,2b4c6d8e-f1a3-5e7c-9b2d-4a6c8e1f3b5a,nand_flash_minne,nand-flashminnetype,select,false,true,7,true
+9,8c1e3b5a-7f9d-2b4c-6e8a-5d7f1b3c4e6a,grensesnitt,grensesnitt,select,false,true,9,true
+10,1d3f5b7a-9c2e-4b6d-8f1a-5c7e9b3d4f6a,hoyde,høyde,text,false,true,10,false
+11,4f6a8c1e-3b5d-7f9a-2c4e-6b8d1f3a5c7e,bredde,bredde,text,false,true,11,false
+12,7a9c1e3b-5f7d-2b4a-6c8e-1d3f5a7b9c8e,dybde,dybde,text,false,true,12,false
+13,3b5d7f9a-1c2e-4b6d-8f1a-5c7e9b3d4f6a,vekt,vekt,text,false,true,13,false
+14,6d8f1a3c-5e7b-9a2d-4b6c-8e1f3a5c7d9e,ean,ean,text,false,true,14,false
+15,2c4e6b8d-1f3a-5c7e-9b2d-4a6c8e1f3b5a,holdbarhet,ssd-holdbarhet,text,false,true,15,false
+16,5c7e9b3d-4f6a-8c1e-3b5a-7f9d2b4c6e8a,dataoverforing,dataoverføringshastighet,text,false,true,16,false
+17,8e1f3a5c-7d9e-2b4c-6a8d-1f3b5c7d9e8a,intern_hastighet,intern datahastighet,text,false,true,17,false
+18,1f3b5c7d-9e8a-2c4e-6b8d-1f3a5c7d9e8b,lesing,4 kb-direktelesning,text,false,true,18,false
+19,4a6c8e1f-3b5a-7d9e-2c4b-6a8d1f3b5c7d,skrivning,4 kb-direkteskrivning,text,false,true,19,false
+20,7d9e2b4c-6a8d-1f3b-5c7d-9e8a2c4e6b8f,mtbf,mtbf,text,false,true,20,false
+21,9e8a2c4e-6b8f-1d3b-5a7c-9e8b2d4f6a8c,stromforbruk,strømforbruk,text,false,true,21,false
+22,2d4f6a8c-1e3b-5d7f-9a2c-4e6b8d1f3a5c,standarder,tilpassede standarder,text,false,true,22,false
+23,7a2bb2d5-6d7f-4f7b-9c9e-7d4b3f1e2a10,cpu_model,CPU model,text,false,true,1,true
+24,1f9d3b17-8b6a-4e6a-9d5a-3b1f5e7c9d21,cpu_cores,CPU cores,select,false,true,2,true
+25,5b2e7c91-3d4a-4a9b-8e2d-4c6a9f1b2d32,cpu_base_clock,CPU base clock (GHz),text,false,true,3,false
+26,92c7f4e1-6a3b-41c2-a7d9-6e2f9b3c4d43,ram_size,System RAM size (GB),select,false,true,4,true
+27,3a1d5f7b-8c9e-4f02-b3a6-1d2e3f4a5b54,ram_type,System RAM type,select,false,true,5,true
+28,ab4c9e71-2d3f-4b5a-9c7e-8a1b2c3d4e65,storage_ssd_size,SSD size (GB),select,false,true,6,true
+29,4c7e1a2b-3d5f-4a6b-8c9e-1f2a3b4c5d76,storage_hdd_size,HDD size (TB),select,false,true,7,true
+30,8e3d1b2a-5c7f-4e9a-8a1b-2c3d4e5f6a87,gpu_model,GPU model,text,false,true,8,true
+31,0a9f1e2d-3c4b-4a5e-9f7a-1b2c3d4e5f98,os,Operating system,select,false,true,9,true
+32,6b1c2d3e-4f5a-4b6c-8d9e-0f1a2b3c4d09,psu_wattage,PSU wattage (W),select,false,true,10,true
+33,bc2d3e4f-5a6b-47c8-9d0e-1a2b3c4d5e10,form_factor,Case form factor,select,false,true,11,true
+34,1c3e5a7b-9d0e-4a1b-8c2d-3e4f5a6b7c11,ram_capacity,RAM capacity (GB),select,false,true,1,true
+35,2d4f6a8b-0c1d-4e2f-9a3b-4c5d6e7f8a12,ram_frequency,RAM frequency (MHz),select,false,true,2,true
+36,3e5a7b9c-1d2e-4f3a-8b4c-5d6e7f8a9b13,ram_form_factor,RAM form factor,select,false,true,3,true
+37,4f6b8c9d-2e3f-4a5b-9c6d-7e8f9a0b1c14,ram_timings,RAM timings (CL),select,false,true,4,false
+38,5a7c9e1f-3b4c-4d5e-8f9a-0b1c2d3e4f15,ram_voltage,RAM voltage (V),text,false,true,5,false
+39,6b8d0f1a-4c5d-4e6f-9a0b-1c2d3e4f5a16,cpu_socket,CPU socket,select,false,true,1,true
+40,7c9e1f2a-5d6e-4f70-8b1c-2d3e4f5a6b17,cpu_series,CPU series,select,false,true,2,true
+41,8d0f1a2b-6e7f-4071-9c2d-3e4f5a6b7c18,cpu_threads,CPU threads,select,false,true,3,true
+42,9e1f2a3b-7f80-4172-8d3e-4f5a6b7c8d19,cpu_boost_clock,CPU boost clock (GHz),text,false,true,4,false
+43,0f2a3b4c-8091-4273-9e4f-5a6b7c8d9e20,cpu_tdp,TDP (W),select,false,true,5,true
+44,1a3b4c5d-91a2-4374-8f50-6b7c8d9e0f21,cpu_igpu,Integrated graphics,select,false,true,6,true
+45,2b4c5d6e-a1b2-4475-9a61-7c8d9e0f1a22,storage_type,Storage type,select,false,true,1,true
+46,3c5d6e7f-b2c3-4576-8b72-8d9e0f1a2b23,storage_form_factor,Storage form factor,select,false,true,2,true
+47,4d6e7f80-c3d4-4677-9c83-9e0f1a2b3c24,storage_interface,Storage interface,select,false,true,3,true
+48,5e7f8091-d4e5-4788-8d94-0f1a2b3c4d25,storage_capacity,Capacity,select,false,true,4,true
+49,6f8091a2-e5f6-4899-9ea5-1a2b3c4d5e26,read_speed,Read speed (MB/s),text,false,true,5,false
+50,708192a3-f607-49aa-8fb6-2b3c4d5e6f27,write_speed,Write speed (MB/s),text,false,true,6,false
+51,8192a3b4-0618-4abb-9ac7-3c4d5e6f7082,nand_type,NAND type,select,false,true,7,true
+52,92a3b4c5-1729-4bcc-8bd8-4d5e6f708193,mb_socket,Socket,select,false,true,1,true
+53,a3b4c5d6-283a-4cdd-9ce9-5e6f708192a4,mb_chipset,Chipset,select,false,true,2,true
+54,b4c5d6e7-394b-4dee-8dfa-6f708192a3b5,mb_form_factor,Form factor,select,false,true,3,true
+55,c5d6e7f8-4a5c-4eef-9e0b-708192a3b4c6,mb_memory_slots,Memory slots,select,false,true,4,true
+56,d6e7f8a9-5b6d-4ff0-8f1c-8192a3b4c5d7,mb_memory_type,Memory type,select,false,true,5,true
+57,e7f8a9b0-6c7e-4001-9f2d-92a3b4c5d6e8,mb_pcie_slots,PCIe slots,select,false,true,6,false
+58,f8a9b0c1-7d8f-4102-8a3e-a3b4c5d6e7f9,mb_sata_ports,SATA ports,select,false,true,7,false
+59,a9b0c1d2-8e9f-4203-9b4f-b4c5d6e7f8a0,mb_m2_slots,M.2 slots,select,false,true,8,true
+60,b0c1d2e3-9faf-4304-8c50-c5d6e7f8a9b1,gpu_chipset,GPU chipset,select,false,true,1,true
+61,c0d1e2f3-afb0-4405-9d61-d6e7f8a9b0c2,gpu_vram_size,VRAM size (GB),select,false,true,2,true
+62,d0e1f2a3-b4c5-4436-8e72-e7f8a9b0c1d3,gpu_vram_type,VRAM type,select,false,true,3,true
+63,e1f2a3b4-c5d6-5437-9f83-f8a9b0c1d2e4,gpu_power_connectors,Power connectors,select,false,true,4,false
+64,f2a3b4c5-d6e7-6438-8a94-0a1b2c3d4e5f,gpu_length_mm,Length (mm),select,false,true,5,false
+65,a3b4c5d6-e7f8-7439-9ba5-1b2c3d4e5f60,gpu_outputs,Outputs,select,false,true,6,false
+66,b4c5d6e7-f8a9-843a-8cb6-2c3d4e5f6a71,psu_wattage_range,Wattage (W),select,false,true,1,true
+67,c5d6e7f8-a9b0-953b-9dc7-3d4e5f6a7b82,psu_80plus,80 PLUS certification,select,false,true,2,true
+68,d6e7f8a9-b0c1-a63c-8ed8-4e5f6a7b8c93,psu_form_factor,Form factor,select,false,true,3,true
+69,e7f8a9b0-c1d2-b73d-9fe9-5f6a7b8c9d04,psu_modularity,Modularity,select,false,true,4,true
+70,f8a9b0c1-d2e3-c83e-8a0a-6a7b8c9d0e15,case_supported_mobos,Supported mobo form factors,select,false,true,1,true
+71,a9b0c1d2-e3f4-d93f-9b1b-7b8c9d0e1f26,case_max_gpu_length,Max GPU length (mm),select,false,true,2,false
+72,b0c1d2e3-f4a5-ed40-8c2c-8c9d0e1f2a37,case_max_cooler_height,Max cooler height (mm),select,false,true,3,false
+73,c1d2e3f4-a5b6-f041-9d3d-9d0e1f2a3b48,case_fan_support,Fan support,select,false,true,4,false
+74,d2e3f4a5-b6c7-1042-8e4e-0e1f2a3b4c59,case_rgb,RGB lighting,select,false,true,5,false
+75,e3f4a5b6-c7d8-2143-9f5f-1f2a3b4c5d60,cooling_type,Cooling type,select,false,true,1,true
+76,f4a5b6c7-d8e9-3244-8a60-2a3b4c5d6e71,cooling_socket_compat,Socket compatibility,select,false,true,2,true
+77,a5b6c7d8-e9f0-4345-9b71-3b4c5d6e7f82,cooling_fan_diameter,Fan diameter (mm),select,false,true,3,false
+78,b6c7d8e9-f0a1-5446-8c82-4c5d6e7f8a93,cooling_noise,Noise level (dBA),select,false,true,4,false
+79,c7d8e9f0-a1b2-6547-9d93-5d6e7f8a9b04,cards_type,Card type,select,false,true,1,true
+80,d8e9f0a1-b2c3-8748-8ea4-6e7f8a9b0c15,cards_interface,Interface,select,false,true,2,true
+81,e9f0a1b2-c3d4-9949-9fb5-7f8a9b0c1d26,cable_type,Cable type,select,false,true,1,true
+82,f0a1b2c3-d4e5-aa50-8ac6-8a9b0c1d2e37,cable_length,Length (m),select,false,true,2,false
+83,a1b2c3d4-e5f6-bb51-9bd7-9b0c1d2e3f48,cable_interface,Interface standard,select,false,true,3,true
+84,b2c3d4e5-f6a7-cc52-8ce8-0c1d2e3f4a59,component_type,Component type,select,false,true,1,true
+85,c3d4e5f6-a7b8-dd53-9df9-1d2e3f4a5b60,component_interface,Interface,select,false,true,2,true
+86,d4e5f6a7-b8c9-ee54-8e0a-2e3f4a5b6c71,combo_contents,Combo contents,text,false,true,1,false
