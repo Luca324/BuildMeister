@@ -1,3 +1,7 @@
+export function quoteIdentifier(identifier) {
+	return `"${identifier.replace(/"/g, '""')}"`
+}
+
 export function getPrimaryKeyColumn(tableName) {
 	// Определяем имя первичного ключа на основе имени таблицы
 	const keyMap = {
@@ -36,8 +40,8 @@ export async function updateSequence(sequenceName, tableName, client) {
 	try {
 		const primaryKeyColumn = getPrimaryKeyColumn(tableName)
 		const query = `
-      SELECT setval('${sequenceName}', COALESCE((SELECT MAX(${primaryKeyColumn}) FROM ${tableName}), 1), true)
-    `
+	      SELECT setval('${sequenceName}', COALESCE((SELECT MAX(${quoteIdentifier(primaryKeyColumn)}) FROM ${quoteIdentifier(tableName)}), 1), true)
+	    `
 		await client.query(query)
 		console.log(`🔄 Обновлена последовательность: ${sequenceName}`)
 	} catch (error) {
@@ -45,19 +49,35 @@ export async function updateSequence(sequenceName, tableName, client) {
 	}
 }
 
-export async function truncateTable(tableName, client) {
+export async function truncateTable(tableName, client, options = {}) {
+	const { forceCascade = false } = options
+	const quotedTable = quoteIdentifier(tableName)
 	// Убираем CASCADE - все таблицы очищаются по порядку из списка importTables
 	// Каждая таблица очищается только один раз, поэтому CASCADE не нужен
 	try {
 		// Пытаемся очистить без CASCADE
-		await client.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY`)
+		const truncateQuery = forceCascade
+			? `TRUNCATE TABLE ${quotedTable} RESTART IDENTITY CASCADE`
+			: `TRUNCATE TABLE ${quotedTable} RESTART IDENTITY`
+  await client.query(truncateQuery)
 		console.log(`🗑️  Очищена таблица: ${tableName}`)
 	} catch (error) {
 		// Если не удалось из-за foreign key constraints, используем DELETE
 		// DELETE не требует очистки дочерних таблиц
 		if (error.message.includes('external') || error.message.includes('foreign key')) {
+    if (!forceCascade) {
+     // Повторяем попытку с CASCADE, если разрешено по опциям
+     try {
+					await client.query(`TRUNCATE TABLE ${quotedTable} RESTART IDENTITY CASCADE`)
+      console.log(`🗑️  Очищена таблица: ${tableName} (через TRUNCATE CASCADE)`)
+      return
+     } catch (cascadeError) {
+      // Если и CASCADE не удался, продолжаем с DELETE
+      error = cascadeError
+     }
+    }
 			try {
-				const deleteResult = await client.query(`DELETE FROM ${tableName}`)
+				const deleteResult = await client.query(`DELETE FROM ${quotedTable}`)
 				// Сбрасываем sequence вручную
 				const primaryKeyColumn = getPrimaryKeyColumn(tableName)
 				const sequenceName = `${tableName}_${primaryKeyColumn}_seq`
