@@ -16,7 +16,7 @@ export async function importTable(tableConfig, importDir) {
 	}
 
 	try {
-		console.log(`📥 Импортируем таблицу: ${tableConfig.name}...`)
+		console.log(`📥 Импортируем таблицу: ${tableConfig.name}...*`)
 
 		const { headers: originalHeaders, dataLines } = parseCSVFile(filePath)
 
@@ -148,21 +148,35 @@ async function insertData(client, tableConfig, values, placeholders, headers) {
 
 	const hasUuid = headers.includes('uuid')
 	const canUseOnConflict = hasUuid && tablesWithUuidUnique.includes(tableConfig.name)
+	const overridingClause = tableConfig.overrideIdentity ? 'OVERRIDING SYSTEM VALUE' : ''
+	const identityColumns = tableConfig.identityColumns ?? []
 
 	// Строим запрос с ON CONFLICT для обработки дубликатов
 	let insertQuery
 	if (canUseOnConflict) {
 		// Если есть uuid и таблица поддерживает ON CONFLICT, используем его
-		const updateColumns = headers.filter(h => h !== 'uuid' && h !== 'created_at').map(h => `${h} = EXCLUDED.${h}`).join(', ')
-		insertQuery = `
-		INSERT INTO ${tableConfig.name} (${headers.join(', ')})
-		VALUES ${placeholders.join(', ')}
-		ON CONFLICT (uuid) DO UPDATE SET ${updateColumns}
-	  `
+		const updatableColumns = headers.filter((h) => h !== 'uuid' && h !== 'created_at' && !identityColumns.includes(h))
+		if (updatableColumns.length > 0) {
+			const updateColumns = updatableColumns.map(h => `${h} = EXCLUDED.${h}`).join(', ')
+			insertQuery = `
+			INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+			${overridingClause}
+			VALUES ${placeholders.join(', ')}
+			ON CONFLICT (uuid) DO UPDATE SET ${updateColumns}
+		  `
+		} else {
+			insertQuery = `
+			INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+			${overridingClause}
+			VALUES ${placeholders.join(', ')}
+			ON CONFLICT (uuid) DO NOTHING
+		  `
+		}
 	} else {
 		// Обычный INSERT без ON CONFLICT
 		insertQuery = `
 		INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+		${overridingClause}
 		VALUES ${placeholders.join(', ')}
 	  `
 	}
