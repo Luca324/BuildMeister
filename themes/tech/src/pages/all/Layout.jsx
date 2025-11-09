@@ -6,6 +6,7 @@ import "./Layout.scss";
 import "./tailwind.scss";
 
 export default function Layout() {
+  console.log("Layout header render*");
   return (
     <>
       <LoadingBar />
