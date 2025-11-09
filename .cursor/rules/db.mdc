@@ -3,3 +3,4 @@ alwaysApply: true
 ---
 
 - перед генерацией данных для миграций в БД, ознакомься с файлом DATABASE_SCHEMA.md
+- не изменяй файл DATABASE_SCHEMA.m
