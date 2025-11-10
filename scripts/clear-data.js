@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import importTables from './constants/importTables.js'
-import { getConnection, testConnection } from './db-connection.js'
 import { getTableStats } from './utils/importUtils.js'
 import { quoteIdentifier, truncateTable } from './utils/sequenceUtils.js'
+import { getConnection, testConnection } from './db-connection.js'
 
 console.log('🚮 Начинаем очистку данных EverShop БД...')
 
@@ -15,7 +15,7 @@ async function clearSingleTable(tableConfig, countBefore) {
 		await client.query('BEGIN')
 
 		try {
-            await truncateTable(tableConfig.name, client, { forceCascade: true })
+			await truncateTable(tableConfig.name, client, { forceCascade: true })
 			await client.query('COMMIT')
 		} catch (error) {
 			try {
