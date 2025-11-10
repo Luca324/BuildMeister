@@ -4,7 +4,7 @@ import path from 'path'
 import { getConnection } from '../db-connection.js'
 
 import { parseCSVFile, parseCSVLine } from './parseCSV.js'
-import { truncateTable, updateSequence } from './sequenceUtils.js'
+import { updateSequence } from './sequenceUtils.js'
 
 export async function importTable(tableConfig, importDir) {
 	const filePath = path.join(importDir, tableConfig.filename)
@@ -33,6 +33,7 @@ export async function importTable(tableConfig, importDir) {
 		try {
 			// Очищаем таблицу перед импортом
 			// Используем SAVEPOINT, чтобы можно было откатиться при ошибке truncate
+			/*
 			try {
 				await client.query('SAVEPOINT before_truncate')
 				await truncateTable(tableConfig.name, client)
@@ -53,6 +54,7 @@ export async function importTable(tableConfig, importDir) {
 					}
 				}
 			}
+				*/
 
 			// Подготавливаем данные для вставки
 			const { values, placeholders, skippedRowsNum, headers } = prepareDataForInsert(tableConfig, originalHeaders, dataLines)
@@ -139,6 +141,9 @@ export async function importTable(tableConfig, importDir) {
 // HELPERS
 
 async function insertData(client, tableConfig, values, placeholders, headers) {
+
+	console.log('headers*', headers.join(', '))
+	console.log('values*', values.join(', '))
 	// Таблицы, которые имеют уникальный индекс на uuid для ON CONFLICT
 	// Для остальных используем обычный INSERT
 	const tablesWithUuidUnique = [

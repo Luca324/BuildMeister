@@ -50,7 +50,7 @@ export async function updateSequence(sequenceName, tableName, client) {
 }
 
 export async function truncateTable(tableName, client, options = {}) {
-	const { forceCascade = false } = options
+	const { forceCascade = true } = options
 	const quotedTable = quoteIdentifier(tableName)
 	// Убираем CASCADE - все таблицы очищаются по порядку из списка importTables
 	// Каждая таблица очищается только один раз, поэтому CASCADE не нужен
@@ -59,23 +59,23 @@ export async function truncateTable(tableName, client, options = {}) {
 		const truncateQuery = forceCascade
 			? `TRUNCATE TABLE ${quotedTable} RESTART IDENTITY CASCADE`
 			: `TRUNCATE TABLE ${quotedTable} RESTART IDENTITY`
-  await client.query(truncateQuery)
+		await client.query(truncateQuery)
 		console.log(`🗑️  Очищена таблица: ${tableName}`)
 	} catch (error) {
 		// Если не удалось из-за foreign key constraints, используем DELETE
 		// DELETE не требует очистки дочерних таблиц
 		if (error.message.includes('external') || error.message.includes('foreign key')) {
-    if (!forceCascade) {
-     // Повторяем попытку с CASCADE, если разрешено по опциям
-     try {
+			if (!forceCascade) {
+				// Повторяем попытку с CASCADE, если разрешено по опциям
+				try {
 					await client.query(`TRUNCATE TABLE ${quotedTable} RESTART IDENTITY CASCADE`)
-      console.log(`🗑️  Очищена таблица: ${tableName} (через TRUNCATE CASCADE)`)
-      return
-     } catch (cascadeError) {
-      // Если и CASCADE не удался, продолжаем с DELETE
-      error = cascadeError
-     }
-    }
+					console.log(`🗑️  Очищена таблица: ${tableName} (через TRUNCATE CASCADE)`)
+					return
+				} catch (cascadeError) {
+					// Если и CASCADE не удался, продолжаем с DELETE
+					error = cascadeError
+				}
+			}
 			try {
 				const deleteResult = await client.query(`DELETE FROM ${quotedTable}`)
 				// Сбрасываем sequence вручную
