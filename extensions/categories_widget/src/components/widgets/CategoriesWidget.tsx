@@ -42,9 +42,9 @@ export default function CategoriesWidget({
             <a
               key={category.uuid}
               href={category.url || `#category-${category.uuid}`}
-              className="category-card block border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+              className="category-card block rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
             >
-              <div className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+              <div className="w-full h-48 flex items-center justify-center overflow-hidden">
                 {category.image?.url ? (
                   <img
                     src={category.image.url}
