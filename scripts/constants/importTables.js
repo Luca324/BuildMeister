@@ -193,7 +193,8 @@ const importTables = [
 	{
 		name: 'product_attribute_value_index',
 		filename: 'product_attribute_values.csv',
-		hasSequence: false,
+		hasSequence: true,
+		sequenceName: 'public.product_attribute_value_index_product_attribute_value_index_seq',
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['product_attribute_value_index_id'],
