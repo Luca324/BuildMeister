@@ -73,7 +73,7 @@ export async function truncateTable(tableName, client, options = {}) {
 					return
 				} catch (cascadeError) {
 					// Если и CASCADE не удался, продолжаем с DELETE
-					error = cascadeError
+					// error = cascadeError
 				}
 			}
 			try {
