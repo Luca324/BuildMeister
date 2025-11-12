@@ -31,6 +31,7 @@ export function getPrimaryKeyColumn(tableName) {
 		'tax_rate': 'tax_rate_id',
 		'url_rewrite': 'url_rewrite_id',
 		'widget': 'widget_id',
+		'product_attribute_value_index': 'product_attribute_value_index_id',
 	}
 
 	return keyMap[tableName] || `${tableName.split('_')[0]}_id`
@@ -39,13 +40,30 @@ export function getPrimaryKeyColumn(tableName) {
 export async function updateSequence(sequenceName, tableName, client) {
 	try {
 		const primaryKeyColumn = getPrimaryKeyColumn(tableName)
+		let resolvedSequenceName = sequenceName
+
+		if (!resolvedSequenceName) {
+			console.log('didnt find sequence name, looking up...')
+			const lookupResult = await client.query(
+				'SELECT pg_get_serial_sequence($1, $2) AS seq_name',
+				[tableName, primaryKeyColumn],
+			)
+			resolvedSequenceName = lookupResult.rows[0]?.seq_name
+			console.log('found sequence name,', resolvedSequenceName)
+		}
+
+		if (!resolvedSequenceName) {
+			console.warn(`⚠️  Не удалось определить sequence для ${tableName}`)
+			return
+		}
+
 		const query = `
-	      SELECT setval('${sequenceName}', COALESCE((SELECT MAX(${quoteIdentifier(primaryKeyColumn)}) FROM ${quoteIdentifier(tableName)}), 1), true)
+	      SELECT setval($1::regclass, COALESCE((SELECT MAX(${quoteIdentifier(primaryKeyColumn)}) FROM ${quoteIdentifier(tableName)}), 1), true)
 	    `
-		await client.query(query)
-		console.log(`🔄 Обновлена последовательность: ${sequenceName}`)
+		await client.query(query, [resolvedSequenceName])
+		console.log(`🔄 Обновлена последовательность: ${resolvedSequenceName}*`)
 	} catch (error) {
-		console.warn(`⚠️  Не удалось обновить последовательность ${sequenceName}:`, error.message)
+		console.warn(`⚠️  Не удалось обновить последовательность ${sequenceName || tableName}:`, error.message)
 	}
 }
 
