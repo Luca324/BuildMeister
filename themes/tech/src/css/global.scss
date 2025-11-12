@@ -7,22 +7,12 @@ html body {
   position: relative; /* добавляем для правильного позиционирования */
   overflow: hidden; /* скрываем выходящие за границы части изображения */
   min-height: 14rem;
-  background-color: #f6f6f6;
-  border-radius: 0.5rem;
-}
-.product-thumbnail-listing img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
+  background-color: #fff !important;
+  border-radius: 0.75rem;
 }
 
 .listing-tem,
 .listing-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
   background-color: #fff;
   padding: 1.6rem;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -39,8 +29,6 @@ html body {
 }
 
 .categories__widget .category-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
   background-color: #fff;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
@@ -74,4 +62,8 @@ html body {
 
 .header .page-width > .icon-wrapper {
   order: 3;
+}
+
+.category-card img {
+  object-fit: contain;
 }

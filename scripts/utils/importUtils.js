@@ -142,8 +142,8 @@ export async function importTable(tableConfig, importDir) {
 
 async function insertData(client, tableConfig, values, placeholders, headers) {
 
-	console.log('headers*', headers.join(', '))
-	console.log('values*', values.join(', '))
+	// console.log('headers*', headers.join(', '))
+	// console.log('values*', values.join(', '))
 	// Таблицы, которые имеют уникальный индекс на uuid для ON CONFLICT
 	// Для остальных используем обычный INSERT
 	const tablesWithUuidUnique = [
