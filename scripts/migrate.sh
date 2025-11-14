@@ -21,6 +21,7 @@ while ! grep -q "Your website is running at" /tmp/app.log; do
 done
 
 echo "Приложение запущено! Запускаем миграции..."
+npm run db:clear
 npm run db:import &
 
 # Ждём завершения всех фоновых процессов
