@@ -21,4 +21,4 @@ RUN chmod +x ./scripts/export-data.js
 
 EXPOSE 3000
 
-CMD ["sh", "./scripts/migrate.sh"]
+CMD ["npm", "run", "start"]
