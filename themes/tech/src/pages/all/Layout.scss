@@ -127,17 +127,6 @@ p {
     h6 {
       font-size: $h6-font-size;
     }
-    .header .page-width > div:nth-child(1) {
-      order: 1;
-    }
-    
-    .header .page-width > div:nth-child(2) {
-      order: 2;
-    }
-    
-    .header .page-width > .icon-wrapper {
-      order: 3;
-    }
   }
 }
 
