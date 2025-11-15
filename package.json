@@ -7,7 +7,7 @@
     "setup": "evershop install",
     "lint": "eslint scripts/**/*.js",
     "lint:fix": "eslint scripts/**/*.js --fix",
-    "start": "evershop start",
+    "start": "cross-env PORT=80 evershop start",
     "build": "evershop build",
     "dev": "evershop dev",
     "user:create": "evershop user:create",
@@ -18,20 +18,22 @@
   "dependencies": {
     "@evershop/evershop": "2.0.1"
   },
-  "workspaces": ["themes/*"],
+  "workspaces": [
+    "themes/*"
+  ],
   "devDependencies": {
-    "copyfiles": "^2.4.1",
     "@parcel/watcher": "2.5.1",
     "@types/config": "3.3.5",
     "@types/express": "5.0.3",
     "@types/node": "24.7.0",
     "@types/pg": "8.15.5",
     "@types/react": "19.2.2",
-    
-		"eslint": "^8.55.0",
-		"eslint-plugin-import": "^2.29.1",
-		"eslint-plugin-simple-import-sort": "^10.0.0",
-		"eslint-plugin-unused-imports": "^3.0.0",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.55.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-unused-imports": "^3.0.0",
     "execa": "9.6.0",
     "typescript": "5.9.3"
   }
