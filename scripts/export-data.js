@@ -12,6 +12,9 @@ import { getConnection } from './db-connection.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const exportDir = path.join(__dirname, '..', 'data-export')
+const mediaSourceDir = path.join(__dirname, '..', 'media')
+const mediaExportDir = path.join(exportDir, 'media')
+const fsp = fs.promises
 
 logExportStart(exportDir)
 
@@ -30,13 +33,16 @@ async function main() {
 
 		await logDBStats()
 
-		console.log('\n📤 Начинаем экспорт таблиц...')
+		console.log('\n📤 Начинаем экспорт таблиц...*')
 		let totalExported = 0
 
 		for (const table of exportTables) {
 			const count = await exportTable(table)
 			totalExported += count
 		}
+
+		const mediaCopied = await copyMediaAssets()
+		console.log(`🖼️ Медиафайлы скопированы: ${mediaCopied}*`)
 
 		logExportSuccess(totalExported, exportDir)
 	} catch (error) {
@@ -71,6 +77,58 @@ async function exportTable(tableConfig) {
 			client.release()
 		}
 	}
+}
+
+async function copyMediaAssets() {
+	if (!fs.existsSync(mediaSourceDir)) {
+		console.log('⚠️  Каталог media не найден, пропускаем копирование...*')
+		return 0
+	}
+
+	console.log(`🧭 Старт копирования медиа: ${mediaSourceDir} -> ${mediaExportDir}*`)
+	await resetTargetMediaDir()
+	const copied = await copyDirectory(mediaSourceDir, mediaExportDir)
+	console.log(`📦 Завершено копирование медиа. Всего файлов: ${copied}*`)
+	return copied
+}
+
+async function resetTargetMediaDir() {
+	if (fs.existsSync(mediaExportDir)) {
+		console.log(`🧹 Очищаем каталог экспорта медиа: ${mediaExportDir}*`)
+		await fsp.rm(mediaExportDir, { recursive: true, force: true })
+	}
+
+	console.log(`📁 Создаем корневой каталог для медиа: ${mediaExportDir}*`)
+	await fsp.mkdir(mediaExportDir, { recursive: true })
+}
+
+async function copyDirectory(source, destination) {
+	const entries = await fsp.readdir(source, { withFileTypes: true })
+	let copiedFiles = 0
+	console.log(`📂 Обрабатываем каталог: ${source} (${entries.length} элементов)*`)
+
+	if (entries.length === 0) {
+		console.log(`⚠️  Каталог ${source} пуст, файлов нет для копирования*`)
+	}
+
+	for (const entry of entries) {
+		const srcPath = path.join(source, entry.name)
+		const destPath = path.join(destination, entry.name)
+
+		if (entry.isDirectory()) {
+			console.log(`↪️  Входим в подкаталог: ${srcPath}*`)
+			await fsp.mkdir(destPath, { recursive: true })
+			copiedFiles += await copyDirectory(srcPath, destPath)
+		} else if (entry.isFile()) {
+			console.log(`📑 Копируем файл: ${srcPath} -> ${destPath}*`)
+			await fsp.copyFile(srcPath, destPath)
+			copiedFiles += 1
+		} else {
+			console.log(`🔸 Пропускаем не поддерживаемый объект: ${srcPath}*`)
+		}
+	}
+
+	return copiedFiles
 }
 
 // Обработка сигналов для корректного завершения
