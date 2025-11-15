@@ -6,7 +6,7 @@
     "language": "no",
     "weightUnit": "kg",
     "country": "NO",
-    "homeUrl": "http://buildmeister.no",
+    "homeUrl": "http://buildmeister.no:3000",
     "email": "example@mail.ru",
     "phone": "8999999999"
   },
