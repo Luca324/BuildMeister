@@ -57,7 +57,7 @@ const importTables = [
 	{
 		name: 'shipping_zone_province',
 		filename: 'shipping_zone_province.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['shipping_zone_province_id'],
@@ -65,7 +65,7 @@ const importTables = [
 	{
 		name: 'shipping_zone_method',
 		filename: 'shipping_zone_method.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['shipping_zone_method_id'],
@@ -91,7 +91,7 @@ const importTables = [
 	{
 		name: 'category_description',
 		filename: 'category_descriptions.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['category_description_id'],
@@ -108,7 +108,7 @@ const importTables = [
 	{
 		name: 'cms_page_description',
 		filename: 'cms_page_description.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['cms_page_description_id'],
@@ -143,7 +143,7 @@ const importTables = [
 	{
 		name: 'attribute_group_link',
 		filename: 'attribute_group_links.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['attribute_group_link_id'],
@@ -169,7 +169,7 @@ const importTables = [
 	{
 		name: 'product_description',
 		filename: 'product_descriptions.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['product_description_id'],
@@ -177,7 +177,7 @@ const importTables = [
 	{
 		name: 'product_image',
 		filename: 'product_images.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['product_image_id'],
@@ -185,7 +185,7 @@ const importTables = [
 	{
 		name: 'product_inventory',
 		filename: 'product_inventory.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['product_inventory_id'],
@@ -220,7 +220,7 @@ const importTables = [
 	{
 		name: 'product_collection',
 		filename: 'product_collections.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['product_collection_id'],
@@ -246,7 +246,7 @@ const importTables = [
 	{
 		name: 'customer_address',
 		filename: 'customer_address.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['customer_address_id'],
@@ -254,7 +254,7 @@ const importTables = [
 	{
 		name: 'reset_password_token',
 		filename: 'reset_password_token.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['reset_password_token_id'],
@@ -262,7 +262,7 @@ const importTables = [
 	{
 		name: 'cart_address',
 		filename: 'cart_address.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['cart_address_id'],
@@ -279,7 +279,7 @@ const importTables = [
 	{
 		name: 'cart_item',
 		filename: 'cart_item.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['cart_item_id'],
@@ -287,7 +287,7 @@ const importTables = [
 	{
 		name: 'order_address',
 		filename: 'order_address.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['order_address_id'],
@@ -304,7 +304,7 @@ const importTables = [
 	{
 		name: 'order_item',
 		filename: 'order_item.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['order_item_id'],
@@ -312,7 +312,7 @@ const importTables = [
 	{
 		name: 'order_activity',
 		filename: 'order_activity.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['order_activity_id'],
@@ -356,14 +356,14 @@ const importTables = [
 	{
 		name: 'migration',
 		filename: 'migration.csv',
-		hasSequence: false,
+		hasSequence: true,
 		overrideIdentity: true,
 		identityColumns: ['migration_id'],
 	},
 	{
 		name: 'session',
 		filename: 'session.csv',
-		hasSequence: false,
+		hasSequence: true,
 		truncate: true,
 		overrideIdentity: true,
 		identityColumns: ['session_id'],
