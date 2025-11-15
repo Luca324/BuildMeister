@@ -1,12 +1,12 @@
 {
   "shop": {
-    "name": "BuildMeister - 123",
+    "name": "BuildMeister",
     "description": "Din pålitelige leverandør av datamaskiner, komponenter og tilbehør i Norge",
     "currency": "NOK",
     "language": "no",
     "weightUnit": "kg",
     "country": "NO",
-    "homeUrl": "http://localhost:3000",
+    "homeUrl": "http://buildmeister.no",
     "email": "example@mail.ru",
     "phone": "8999999999"
   },

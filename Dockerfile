@@ -19,6 +19,7 @@ RUN chmod +x ./scripts/migrate.sh
 RUN chmod +x ./scripts/import-data.js
 RUN chmod +x ./scripts/export-data.js
 
-EXPOSE 3000
+ENV PORT=80
+EXPOSE 80
 
 CMD ["npm", "run", "start"]
