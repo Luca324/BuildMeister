@@ -41,8 +41,8 @@ async function main() {
 			totalExported += count
 		}
 
-		const mediaCopied = await copyMediaAssets()
-		console.log(`🖼️ Медиафайлы скопированы: ${mediaCopied}*`)
+		// const mediaCopied = await copyMediaAssets()
+		// console.log(`🖼️ Медиафайлы скопированы: ${mediaCopied}*`)
 
 		logExportSuccess(totalExported, exportDir)
 	} catch (error) {
