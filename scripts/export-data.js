@@ -11,11 +11,18 @@ import { getConnection } from './db-connection.js'
 // Путь для экспорта данных
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const exportDir = path.join(__dirname, '..', 'data-export')
+// Поддержка кастомной папки экспорта через переменную окружения
+const defaultExportDir = path.join(__dirname, '..', 'data-export')
+const exportDir = process.env.EXPORT_DIR 
+	? (path.isAbsolute(process.env.EXPORT_DIR) 
+		? process.env.EXPORT_DIR 
+		: path.join(__dirname, '..', process.env.EXPORT_DIR))
+	: defaultExportDir
 const mediaSourceDir = path.join(__dirname, '..', 'media')
 const mediaExportDir = path.join(exportDir, 'media')
 const fsp = fs.promises
 
+console.log(`📁 Папка экспорта: ${exportDir}*`)
 logExportStart(exportDir)
 
 // Создаем директорию для экспорта

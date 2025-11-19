@@ -1,6 +1,10 @@
 FROM node:18-alpine
 WORKDIR /app
 RUN npm install -g npm
+
+# Устанавливаем dcron для автоматических бэкапов
+RUN apk add --no-cache dcron
+
 COPY package*.json .
 COPY themes ./themes
 COPY extensions ./extensions
@@ -17,8 +21,13 @@ RUN npm run build
 RUN chmod +x ./scripts/migrate.sh
 RUN chmod +x ./scripts/import-data.js
 RUN chmod +x ./scripts/export-data.js
+RUN chmod +x ./scripts/export-versioned.js
+RUN chmod +x ./scripts/cron-entrypoint.sh
+
+# Устанавливаем crontab для автоматических бэкапов
+RUN crontab ./scripts/crontab
 
 ENV PORT=80
 EXPOSE 80
 
-CMD ["npm", "run", "start"]
+CMD ["./scripts/cron-entrypoint.sh"]
