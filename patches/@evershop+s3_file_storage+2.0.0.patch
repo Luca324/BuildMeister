@@ -1,8 +1,21 @@
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
-index d5f3923..0800258 100644
+index d5f3923..74fbf76 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
-@@ -27,7 +27,8 @@ export const awsFileUploader = {
+@@ -1,7 +1,11 @@
+ import path from "path";
+ import { S3Client, PutObjectCommand, } from "@aws-sdk/client-s3";
+ import { getEnv } from "@evershop/evershop/lib/util/getEnv";
+-const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
++const s3Client = new S3Client({
++    region: getEnv("AWS_REGION"),
++    endpoint: getEnv("AWS_ENDPOINT"),      // добавить
++    forcePathStyle: true                   // обязательно для Яндекса
++});
+ const bucketName = getEnv("AWS_BUCKET_NAME");
+ export const awsFileUploader = {
+     upload: async (files, requestedPath) => {
+@@ -27,7 +31,8 @@ export const awsFileUploader = {
                  name: files[index].filename,
                  mimetype: files[index].mimetype,
                  size: files[index].size,
