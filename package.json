@@ -16,7 +16,8 @@
     "db:import": "node scripts/import-data.js"
   },
   "dependencies": {
-    "@evershop/evershop": "2.0.1"
+    "@evershop/evershop": "2.0.1",
+    "@evershop/s3_file_storage": "^2.0.0"
   },
   "workspaces": [
     "themes/*"
@@ -35,6 +36,8 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
     "execa": "9.6.0",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "typescript": "5.9.3"
   }
 }
