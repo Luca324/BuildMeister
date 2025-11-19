@@ -53,12 +53,19 @@
   },
   "system": {
     "theme": "tech",
+    "file_storage": "s3",
     "extensions": [
       {
         "name": "categories_widget",
         "resolve": "extensions/categories_widget",
         "enabled": true,
         "priority": 20
+      },
+      {
+        "name": "s3_file_storage",
+        "resolve": "node_modules/@evershop/s3_file_storage",
+        "enabled": true,
+        "priority": 10
       }
     ]
   },
