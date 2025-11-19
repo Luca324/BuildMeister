@@ -12,6 +12,7 @@
     "dev": "evershop dev",
     "user:create": "evershop user:create",
     "db:export": "node scripts/export-data.js",
+    "db:export:versioned": "node scripts/export-versioned.js",
     "db:clear": "node scripts/clear-data.js",
     "db:import": "node scripts/import-data.js"
   },
