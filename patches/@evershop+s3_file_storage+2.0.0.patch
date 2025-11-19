@@ -1,0 +1,14 @@
+diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
+index d5f3923..0800258 100644
+--- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
++++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
+@@ -27,7 +27,8 @@ export const awsFileUploader = {
+                 name: files[index].filename,
+                 mimetype: files[index].mimetype,
+                 size: files[index].size,
+-                url: `https://${bucketName}.s3.amazonaws.com/${path.join(requestedPath, files[index].filename)}`,
++                url: `${getEnv("AWS_ENDPOINT")}/${bucketName}/${path.join(requestedPath ?? "", files[index].filename)}` // яндекс s3
++
+             });
+         });
+         return uploadedFiles;
