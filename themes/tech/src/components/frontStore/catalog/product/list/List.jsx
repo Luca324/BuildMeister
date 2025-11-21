@@ -48,9 +48,9 @@ export default function ProductList({ products = [], countPerRow = 3 }) {
       items: products.length,
       firstProductImage: products[0].image,
       imageKeys: Object.keys(products[0].image || {}),
-      listing: products[0].image?.listing,
-      url: products[0].image?.url,
-      origin: products[0].image?.origin,
+      listing: products.map(p => p.image?.listing),
+      url: products.map(p => p.image?.url),
+      origin: products.map(p => p.image?.origin),
     });
   } else {
     console.log('ProductList override rendered*', { items: products.length, firstProduct: products[0] ? { hasImage: !!products[0].image, productId: products[0].productId } : null });
