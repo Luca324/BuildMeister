@@ -109,7 +109,9 @@ export const fragments = `
     }
     image {
       alt
-      url: listing
+      listing
+      url
+      origin
     }
   }
 `;
