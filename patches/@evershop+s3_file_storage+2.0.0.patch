@@ -1,8 +1,8 @@
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
-index 09edceb..c0091bf 100644
+index 09edceb..bec8a45 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
-@@ -1,9 +1,15 @@
+@@ -1,6 +1,11 @@
  import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
  import { getEnv } from "@evershop/evershop/lib/util/getEnv";
 -const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
@@ -15,11 +15,7 @@ index 09edceb..c0091bf 100644
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFileBrowser = {
      list: async (path) => {
-+        console.log('hello from awsFileBrowser.js')
-         if (path !== "") {
-             path = `${path}/`;
-         }
-@@ -23,7 +29,8 @@ export const awsFileBrowser = {
+@@ -23,7 +28,8 @@ export const awsFileBrowser = {
              ? data.Contents.filter((item) => item.Size !== 0).map((object) => {
                  var _a;
                  const fileName = (_a = object.Key) === null || _a === void 0 ? void 0 : _a.split("/").pop();
@@ -30,10 +26,10 @@ index 09edceb..c0091bf 100644
                      name: fileName,
                      url: fileURL,
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
-index 30a7d64..4468de3 100644
+index 30a7d64..1f8b906 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
-@@ -1,9 +1,15 @@
+@@ -1,6 +1,11 @@
  import { S3Client, DeleteObjectCommand, HeadObjectCommand, } from "@aws-sdk/client-s3";
  import { getEnv } from "@evershop/evershop/lib/util/getEnv";
 -const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
@@ -46,15 +42,11 @@ index 30a7d64..4468de3 100644
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFileDeleter = {
      delete: async (path) => {
-+        console.log('hello from awsFileDeleter.js')
-         const params = {
-             Bucket: bucketName,
-             Key: path,
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
-index d5f3923..ca70893 100644
+index d5f3923..24f18bf 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
-@@ -1,10 +1,18 @@
+@@ -1,7 +1,14 @@
  import path from "path";
  import { S3Client, PutObjectCommand, } from "@aws-sdk/client-s3";
  import { getEnv } from "@evershop/evershop/lib/util/getEnv";
@@ -70,11 +62,7 @@ index d5f3923..ca70893 100644
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFileUploader = {
      upload: async (files, requestedPath) => {
-+        console.log('hello from awsFileUploader.js**', 's3clientparams', s3clientparams);
-         const uploadedFiles = [];
-         const uploadPromises = [];
-         for (const file of files) {
-@@ -27,7 +35,8 @@ export const awsFileUploader = {
+@@ -27,7 +34,8 @@ export const awsFileUploader = {
                  name: files[index].filename,
                  mimetype: files[index].mimetype,
                  size: files[index].size,
@@ -85,10 +73,10 @@ index d5f3923..ca70893 100644
          });
          return uploadedFiles;
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
-index 642c6ad..8a863d4 100644
+index 642c6ad..54f0157 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
-@@ -1,9 +1,15 @@
+@@ -1,6 +1,11 @@
  import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
  import { getEnv } from "@evershop/evershop/lib/util/getEnv";
 -const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
@@ -101,15 +89,11 @@ index 642c6ad..8a863d4 100644
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFolderCreator = {
      create: async (path) => {
-+        console.log('hello from awsFolderCreator.js')
-         // Make sure path is not empty and has only 1 trailing slash at the end
-         const requestedPath = path ? path.replace(/\/+$/, "") : "";
-         if (!requestedPath) {
 diff --git a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
-index 977ba54..24bc930 100644
+index 977ba54..e8c9919 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
-@@ -9,46 +9,75 @@ import { error } from "@evershop/evershop/lib/log";
+@@ -9,14 +9,22 @@ import { error } from "@evershop/evershop/lib/log";
  async function downloadObjectToBuffer(objectUrl) {
      var _a;
      const parsedUrl = new URL(objectUrl);
@@ -124,7 +108,6 @@ index 977ba54..24bc930 100644
          Bucket: bucketName,
          Key: objectKey,
      };
-+    console.log('params *', params);
      const getObjectCommand = new GetObjectCommand(params);
 -    const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
 +    const s3clientparams = { 
@@ -132,86 +115,43 @@ index 977ba54..24bc930 100644
 +      endpoint: getEnv("AWS_ENDPOINT"),
 +      forcePathStyle: true
 +  } 
-+  console.log('s3clientparams', s3clientparams);
 +  const s3Client = new S3Client(s3clientparams);
      const data = await s3Client.send(getObjectCommand);
      // Get content as a buffer from the data.Body object
      const buffer = await ((_a = data.Body) === null || _a === void 0 ? void 0 : _a.transformToByteArray());
-     return buffer;
- }
- async function resizeAndUploadImage(s3Client, originalObjectUrl, resizedObjectUrl, width, height) {
-+    console.log('resizeAndUploadImage', originalObjectUrl, resizedObjectUrl, width, height);
-     const bucketName = getEnv("AWS_BUCKET_NAME");
-     const originalImageBuffer = await downloadObjectToBuffer(originalObjectUrl);
-+    console.log('originalImageBuffer');
-     // Resize the image
-     const resizedImageBuffer = await sharp(originalImageBuffer)
-         .resize({ width, height, fit: "inside" })
+@@ -31,7 +39,10 @@ async function resizeAndUploadImage(s3Client, originalObjectUrl, resizedObjectUr
          .toBuffer();
-+    console.log('resizedImageBuffer');
      // Upload the resized image
      const parsedUrl = new URL(resizedObjectUrl);
 -    const objectKey = parsedUrl.pathname.substr(1); // Extract the object key (remove leading '/')
-+    console.log('parsedUrl', parsedUrl);
 +    // Extract the object key (remove leading '/' and bucket segment) for Yandex S3 *
 +    const uploadPathParts = parsedUrl.pathname.replace(/^\/+/, "").split("/");
 +    uploadPathParts.shift();
 +    const objectKey = uploadPathParts.join("/");
-+    console.log('objectKey *', objectKey);
      const uploadParams = {
          Bucket: bucketName,
          Key: objectKey,
-         Body: resizedImageBuffer,
-     };
-+    console.log('uploadParams', uploadParams);
-     const uploadCommand = new PutObjectCommand(uploadParams);
-     await s3Client.send(uploadCommand);
-+    console.log('resizedObjectUrl', resizedObjectUrl);
-     return resizedObjectUrl;
+@@ -43,12 +54,17 @@ async function resizeAndUploadImage(s3Client, originalObjectUrl, resizedObjectUr
  }
  export default async function awsGenerateProductImageVariant(data) {
-+    console.log('data (FROM DIST)', data);
      if (getConfig("system.file_storage") === "s3") {
 -        try {
 -            const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
-+    console.log('getConfig("system.file_storage") === "s3"', true);
 +    try {
 +                const s3clientparams = { 
 +                  region: getEnv("AWS_REGION"),
 +                  endpoint: getEnv("AWS_ENDPOINT"),
 +                  forcePathStyle: true
 +              }
-+              console.log('s3clientparams', s3clientparams);
 +              const s3Client = new S3Client(s3clientparams);
              const originalObjectUrl = data.origin_image;
              // The data.image is the full url of the Object, we need to get the Object path
              // by removing the container url
 -            const ext = path.extname(originalObjectUrl);
 +            const ext = path.extname(originalObjectUrl)
-+            console.log('ext', ext);
              // Target path for single variant by adding a '-single' just before the extension
              const singleObjectUrl = originalObjectUrl.replace(ext, `-single${ext}`);
              // Target path for listing variant by adding a '-listing' just before the extension
-@@ -56,12 +85,19 @@ export default async function awsGenerateProductImageVariant(data) {
-             // Target path for thumbnail variant by adding a '-thumbnail' just before the extension
-             const thumbnailObjectUrl = originalObjectUrl.replace(ext, `-thumbnail${ext}`);
-             // Upload the single variant
-+            console.log('singleObjectUrl', singleObjectUrl);
-             const singleUrl = await resizeAndUploadImage(s3Client, originalObjectUrl, singleObjectUrl, getConfig("catalog.product.image.single.width", 500), getConfig("catalog.product.image.single.height", 500));
-+            console.log('singleUrl', singleUrl);
-             // Upload the listing variant
-+            console.log('listingObjectUrl', listingObjectUrl);
-             const listingUrl = await resizeAndUploadImage(s3Client, originalObjectUrl, listingObjectUrl, getConfig("catalog.product.image.listing.width", 250), getConfig("catalog.product.image.listing.height", 250));
-+            console.log('listingUrl', listingUrl);
-             // Upload the thumbnail variant
-             const thumnailUrl = await resizeAndUploadImage(s3Client, originalObjectUrl, thumbnailObjectUrl, getConfig("catalog.product.image.thumbnail.width", 100), getConfig("catalog.product.image.thumbnail.height", 100));
-             // Update the record in the database with the new URLs in the variant columns
-+            console.log('singleUrl', singleUrl);
-+            console.log('listingUrl', listingUrl);
-+            console.log('thumnailUrl', thumnailUrl);
-             await update("product_image")
-                 .given({
-                 single_image: singleUrl,
 diff --git a/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts b/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts
 index b3f38d7..8d7bb42 100644
 --- a/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts
