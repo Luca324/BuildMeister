@@ -1,6 +1,7 @@
 {
   "shop": {
-    "homeUrl": "http://buildmeister.no"
+    "homeUrl": "http://buildmeister.no",
+    "language": "no"
   }
 }
 
