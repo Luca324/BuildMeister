@@ -6,8 +6,6 @@ import { addProcessor } from '@evershop/evershop/lib/util/registry'
 import { value } from '@evershop/postgres-query-builder'
 
 export default () => {
-	console.log('Registering category_id filter*')
-
 	addProcessor('categoryCollectionFilters', (filters: any[]) => {
 		filters.push({
 			key: 'category_id',

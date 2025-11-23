@@ -3,7 +3,7 @@
     "name": "BuildMeister",
     "description": "Din pålitelige leverandør av datamaskiner, komponenter og tilbehør i Norge",
     "currency": "NOK",
-    "language": "no",
+    "language": "nb",
     "weightUnit": "kg",
     "country": "NO",
     "homeUrl": "http://buildmeister.no:3000",
