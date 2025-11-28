@@ -1,4 +1,5 @@
 import ProductList from '@components/frontStore/catalog/product/list/List';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
@@ -9,7 +10,7 @@ const normalizeProducts = (items = []) =>
   }));
 
 export default function Products({ products: { showProducts, products: { items = [] } = {} } }) {
-  console.log('CategoryView.Products rendered*', { count: items.length });
+  console.log('CategoryView.Products with translations applied*', { count: items.length });
 
   const normalizedItems = useMemo(() => normalizeProducts(items), [items]);
 
@@ -21,7 +22,7 @@ export default function Products({ products: { showProducts, products: { items =
     <div>
       <ProductList products={normalizedItems} countPerRow={3} />
       <span className="product-count italic block mt-8">
-        {`${normalizedItems.length} products`}
+        {_('${count} products', { count: normalizedItems.length })}
       </span>
     </div>
   );
