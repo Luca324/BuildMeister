@@ -3,7 +3,7 @@ SHOP BY,Handle etter
 Sort By,Sorter etter
 There is no product to display,Det er ingen produkter å vise
 ${count} products,${count} produkter
-Search results for "${keyword}",Søkeresultater for "${keyword}"
+Search results for "${keyword}",Søkeresultater for '${keyword}'
 Price,Pris
 Name,Navn
 Default,Standard
