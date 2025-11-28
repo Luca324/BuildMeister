@@ -35,7 +35,7 @@ export default function CategoriesWidget({
     <div className="pt-7 categories__widget">
       <div className="page-width">
         <h3 className="text-center uppercase h5 tracking-widest mb-5">
-          Категории
+        Kategorier
         </h3>
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {categoriesList.map((category) => (
