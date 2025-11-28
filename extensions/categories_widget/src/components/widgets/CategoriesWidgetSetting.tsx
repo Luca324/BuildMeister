@@ -91,7 +91,7 @@ export default function CategoriesWidgetSetting({
 
   return (
     <div>
-      <div className="mb-4">Выберите категории для отображения</div>
+      <div className="mb-4">Velg kategorier som skal vises</div>
       {selectedCategoryIds.length > 0 && (
         <div className="mb-4">
           {selectedCategoryIds.map((categoryId) => (
