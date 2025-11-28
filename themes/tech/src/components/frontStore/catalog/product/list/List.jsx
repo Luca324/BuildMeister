@@ -2,6 +2,7 @@ import Area from '@components/common/Area';
 import { Name } from '@components/frontStore/catalog/product/list/item/Name';
 import { Price } from '@components/frontStore/catalog/product/list/item/Price';
 import { Thumbnail } from '@components/frontStore/catalog/product/list/item/Thumbnail';
+import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
@@ -43,6 +44,7 @@ const resolveProductUrl = (product = {}) => {
 };
 
 export default function ProductList({ products = [], countPerRow = 3 }) {
+  console.log('ProductList with translations applied*', { items: products.length });
   if (products.length > 0 && products[0]?.image) {
     console.log('ProductList override rendered* - Image debug:', {
       items: products.length,
@@ -68,7 +70,7 @@ export default function ProductList({ products = [], countPerRow = 3 }) {
   if (resolvedProducts.length === 0) {
     return (
       <div className="product-list">
-        <div className="text-center">There is no product to display</div>
+        <div className="text-center">{_('There is no product to display')}</div>
       </div>
     );
   }
