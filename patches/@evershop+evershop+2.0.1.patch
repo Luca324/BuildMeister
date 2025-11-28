@@ -1,0 +1,23 @@
+diff --git a/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js b/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
+index 0cbe3c3..2ff949a 100644
+--- a/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
++++ b/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
+@@ -22,7 +22,7 @@ export function createBaseConfig(isServer) {
+             }
+         },
+         {
+-            test: /^[A-Z].*\.js$/,
++            test: /[\\/][A-Z][^\\/]*\.(js|jsx)$/,
+             exclude: {
+                 and: [/node_modules/],
+                 not: [
+@@ -101,7 +101,8 @@ export function createBaseConfig(isServer) {
+     }
+     // Resolve aliases
+     const alias = {
+-        '@evershop/evershop/components': path.resolve(__dirname, '../../components')
++        '@evershop/evershop/components': path.resolve(__dirname, '../../components'),
++        '@evershop/evershop/lib': path.resolve(__dirname, '..')
+     };
+     if (theme) {
+         alias['@components'] = [path.resolve(theme.path, 'dist/components')];
