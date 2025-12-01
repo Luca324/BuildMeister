@@ -1,14 +1,11 @@
 {
   "shop": {
     "name": "BuildMeister",
-    "description": "Din pålitelige leverandør av datamaskiner, komponenter og tilbehør i Norge",
     "currency": "NOK",
     "language": "nb",
     "weightUnit": "kg",
     "country": "NO",
-    "homeUrl": "http://buildmeister.no:3000",
-    "email": "example@mail.ru",
-    "phone": "8999999999"
+    "homeUrl": "http://buildmeister.no:3000"
   },
   "catalog": {
     "product": {
@@ -79,6 +76,7 @@
       "price_including_tax": true
     }
   },
+  "copyRight": "© 2024 BuildMeister. Alle rettigheter reservert.",
   "themeConfig": {
     "logo": {
       "alt": "BuildMeister",
