@@ -3,6 +3,11 @@ html body {
   font-family: 'Poppins', sans-serif;
   font-weight: 300;
 }
+
+* {
+  hyphens: auto;
+}
+
 .product-thumbnail-listing {
   position: relative; /* добавляем для правильного позиционирования */
   overflow: hidden; /* скрываем выходящие за границы части изображения */
