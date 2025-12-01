@@ -6,7 +6,6 @@ import "./Layout.scss";
 import "./tailwind.scss";
 
 export default function Layout() {
-  console.log("Layout header render*");
   return (
     <>
       <LoadingBar />
@@ -114,7 +113,7 @@ export default function Layout() {
           </div>
           <div className="self-center">
             <div className="copyright text-center md:text-right text-textSubdued">
-              <span>Copyright © 2020 EverShop</span>
+              <span>Copyright © {new Date().getFullYear()} BuildMeister. Alle rettigheter reservert.</span>
             </div>
           </div>
         </div>
