@@ -9,21 +9,23 @@ export default function Layout() {
   return (
     <>
       <LoadingBar />
-      <div className="header grid grid-cols-3">
-        <Area 
-          id="header" 
-          noOuter={true} 
-          coreComponents={[
-            {
-              component: { default: Area },
-              props: {
-                id: 'icon-wrapper',
-                className: 'icon-wrapper flex justify-end space-x-4'
+      <div className="header">
+        <div className="page-width flex justify-between">
+          <Area
+            id="header"
+            noOuter
+            coreComponents={[
+              {
+                component: { default: Area },
+                props: {
+                  id: "icon-wrapper",
+                  className: "icon-wrapper flex justify-between space-x-1",
+                },
+                sortOrder: 20,
               },
-              sortOrder: 20
-            }
-          ]} 
-        />
+            ]}
+          />
+        </div>
       </div>
       <main className="content">
         <Area id="content" className="" noOuter />
