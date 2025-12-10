@@ -3,10 +3,6 @@ import PropTypes from "prop-types";
 import React from "react";
 
 export default function Description({ product: { description } }) {
-  console.log("ProductView.Description override rendered*", {
-    rows: description?.length ?? 0,
-  });
-
   return (
     <div className="mt-8 md:mt-12">
       <div className="product-description">

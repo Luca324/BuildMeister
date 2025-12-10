@@ -9,11 +9,6 @@ const normalizeProducts = (items = []) =>
   }));
 
 export default function CollectionProducts({ collection }) {
-  console.log('CollectionProducts widget rendered*', {
-    collection: collection?.name,
-    count: collection?.products?.items?.length ?? 0,
-  });
-
   if (!collection) {
     return null;
   }
