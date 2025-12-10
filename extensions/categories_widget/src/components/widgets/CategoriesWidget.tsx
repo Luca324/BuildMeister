@@ -20,7 +20,6 @@ interface CategoriesWidgetProps {
 export default function CategoriesWidget({
   categories,
 }: CategoriesWidgetProps) {
-  console.log('CategoriesWidget rendered**', { categories });
   
   // categories может быть объектом с items или массивом
   const categoriesList = Array.isArray(categories) 
