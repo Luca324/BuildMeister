@@ -1,8 +1,6 @@
 export default {
   Query: {
     categoriesWidget: async (root: any, { settings }: { settings?: any }) => {
-      console.log('categoriesWidget resolver called*', { settings });
-      
       // Обрабатываем categories - может быть массивом или строкой (запятая-разделенной)
       // categories теперь содержит categoryId (number), а не uuid
       let categories: number[] = [];
