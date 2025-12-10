@@ -44,20 +44,6 @@ const resolveProductUrl = (product = {}) => {
 };
 
 export default function ProductList({ products = [], countPerRow = 3 }) {
-  console.log('ProductList with translations applied*', { items: products.length });
-  if (products.length > 0 && products[0]?.image) {
-    console.log('ProductList override rendered* - Image debug:', {
-      items: products.length,
-      firstProductImage: products[0].image,
-      imageKeys: Object.keys(products[0].image || {}),
-      listing: products.map(p => p.image?.listing),
-      url: products.map(p => p.image?.url),
-      origin: products.map(p => p.image?.origin),
-    });
-  } else {
-    console.log('ProductList override rendered*', { items: products.length, firstProduct: products[0] ? { hasImage: !!products[0].image, productId: products[0].productId } : null });
-  }
-
   const resolvedProducts = useMemo(
     () =>
       products.map((product) => ({

@@ -10,8 +10,6 @@ const normalizeProducts = (items = []) =>
   }));
 
 export default function Products({ products: { items = [] } }) {
-  console.log('CatalogSearch.Products with translations applied*', { count: items.length });
-
   const normalizedItems = useMemo(() => normalizeProducts(items), [items]);
 
   return (
