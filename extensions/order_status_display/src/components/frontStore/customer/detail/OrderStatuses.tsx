@@ -48,6 +48,12 @@ export default function OrderStatuses({ order }: OrderStatusesProps) {
     }
   };
 
+  // Translate status names
+  // @ts-ignore - Function signature differs in runtime
+  const shipmentStatusName = shipmentStatus ? _(shipmentStatus.name) : '';
+  // @ts-ignore - Function signature differs in runtime
+  const paymentStatusName = paymentStatus ? _(paymentStatus.name) : '';
+
   return (
     <div className="order-statuses flex flex-wrap gap-4 mt-4">
       {shipmentStatus && (
@@ -55,7 +61,7 @@ export default function OrderStatuses({ order }: OrderStatusesProps) {
           {/* @ts-ignore - Function signature differs in runtime */}
           <span className="text-sm font-semibold">{_('Shipment')}:</span>
           <Badge
-            title={shipmentStatus.name}
+            title={shipmentStatusName}
             variant={shipmentStatus.badge}
             progress={shipmentStatus.progress || getProgress(shipmentStatus.code, 'shipment')}
           />
@@ -66,7 +72,7 @@ export default function OrderStatuses({ order }: OrderStatusesProps) {
           {/* @ts-ignore - Function signature differs in runtime */}
           <span className="text-sm font-semibold">{_('Payment')}:</span>
           <Badge
-            title={paymentStatus.name}
+            title={paymentStatusName}
             variant={paymentStatus.badge}
             progress={paymentStatus.progress || getProgress(paymentStatus.code, 'payment')}
           />
