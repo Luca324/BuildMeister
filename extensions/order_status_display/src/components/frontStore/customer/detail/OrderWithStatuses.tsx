@@ -60,6 +60,12 @@ export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
     }
   };
 
+  // Translate status names
+  // @ts-ignore - Function signature differs in runtime
+  const shipmentStatusName = shipmentStatus ? _(shipmentStatus.name) : '';
+  // @ts-ignore - Function signature differs in runtime
+  const paymentStatusName = paymentStatus ? _(paymentStatus.name) : '';
+
   return (
     <div className="order border-divider">
       <div className="order-inner grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -116,7 +122,7 @@ export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
                   {/* @ts-ignore - Function signature differs in runtime */}
                   <span className="text-sm font-semibold mb-2 text-center">{_('Shipment')}:</span>
                   <Badge
-                    title={shipmentStatus.name}
+                    title={shipmentStatusName}
                     variant={shipmentStatus.badge}
                     progress={shipmentStatus.progress || getProgress(shipmentStatus.code, 'shipment')}
                   />
@@ -127,7 +133,7 @@ export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
                   {/* @ts-ignore - Function signature differs in runtime */}
                   <span className="text-sm font-semibold mb-2 text-center">{_('Payment')}:</span>
                   <Badge
-                    title={paymentStatus.name}
+                    title={paymentStatusName}
                     variant={paymentStatus.badge}
                     progress={paymentStatus.progress || getProgress(paymentStatus.code, 'payment')}
                   />
