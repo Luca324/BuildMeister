@@ -8,7 +8,6 @@ RUN apk add --no-cache dcron
 COPY package*.json .
 COPY themes ./themes
 COPY extensions ./extensions
-COPY media ./media
 COPY config ./config
 COPY scripts ./scripts
 COPY data-export ./data-export
