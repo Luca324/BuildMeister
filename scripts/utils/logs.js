@@ -2,6 +2,7 @@ import exportTables from '../constants/exportTables.js'
 import { getConnection } from '../db-connection.js'
 
 import logExportData from './logExportData.js'
+import { quoteIdentifier } from './sequenceUtils.js'
 
 export function logError(error) {
 	console.error('❌ Ошибка подключения к БД:')
@@ -49,7 +50,9 @@ async function getTableStats() {
 		let client
 		try {
 			client = await getConnection()
-			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name.split('_')[0]}`)
+			const tableName = table.name.split('_')[0]
+			const quotedTableName = quoteIdentifier(tableName)
+			const result = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 			stats[table.name] = parseInt(result.rows[0].count)
 		} catch (error) {
 			stats[table.name] = 0
@@ -106,7 +109,8 @@ async function getImportTableStats(importTables) {
 		let client
 		try {
 			client = await getConnection()
-			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name}`)
+			const quotedTableName = quoteIdentifier(table.name)
+			const result = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 			stats[table.name] = parseInt(result.rows[0].count)
 		} catch (error) {
 			stats[table.name] = 0
