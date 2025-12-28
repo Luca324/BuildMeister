@@ -175,11 +175,6 @@ const exportTables = [
 		filename: 'reset_password_token.csv',
 	},
 	{
-		name: 'session',
-		query: 'SELECT * FROM session',
-		filename: 'session.csv',
-	},
-	{
 		name: 'shipment',
 		query: 'SELECT * FROM shipment',
 		filename: 'shipment.csv',

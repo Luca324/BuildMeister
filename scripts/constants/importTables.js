@@ -361,14 +361,6 @@ const importTables = [
 		identityColumns: ['migration_id'],
 	},
 	{
-		name: 'session',
-		filename: 'session.csv',
-		hasSequence: true,
-		truncate: true,
-		overrideIdentity: true,
-		identityColumns: ['session_id'],
-	},
-	{
 		name: 'url_rewrite',
 		filename: 'url_rewrite.csv',
 		hasSequence: true,
