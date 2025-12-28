@@ -4,7 +4,7 @@ import path from 'path'
 import { getConnection } from '../db-connection.js'
 
 import { parseCSVFile, parseCSVLine } from './parseCSV.js'
-import { updateSequence } from './sequenceUtils.js'
+import { updateSequence, quoteIdentifier } from './sequenceUtils.js'
 
 export async function importTable(tableConfig, importDir) {
 	const filePath = path.join(importDir, tableConfig.filename)
@@ -73,7 +73,8 @@ export async function importTable(tableConfig, importDir) {
 			const result = await insertData(client, tableConfig, values, placeholders, headers)
 
 			// Явно проверяем, что данные действительно вставлены СРАЗУ после INSERT
-			const verifyResultBeforeSequence = await client.query(`SELECT COUNT(*) as count FROM ${tableConfig.name}`)
+			const quotedTableName = quoteIdentifier(tableConfig.name)
+			const verifyResultBeforeSequence = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 			const actualCountBeforeSequence = parseInt(verifyResultBeforeSequence.rows[0].count)
 
 			// Обновляем последовательность
@@ -82,12 +83,12 @@ export async function importTable(tableConfig, importDir) {
 				try {
 					await updateSequence(tableConfig.sequenceName, tableConfig.name, client)
 					// Проверяем еще раз после updateSequence
-					const verifyResultAfterSequence = await client.query(`SELECT COUNT(*) as count FROM ${tableConfig.name}`)
+					const verifyResultAfterSequence = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 					actualCountAfterSequence = parseInt(verifyResultAfterSequence.rows[0].count)
 				} catch (seqError) {
 					console.error(`❌ Ошибка при обновлении последовательности для ${tableConfig.name}:`, seqError.message)
 					// Проверяем, не исчезли ли данные после ошибки
-					const verifyResultAfterError = await client.query(`SELECT COUNT(*) as count FROM ${tableConfig.name}`)
+					const verifyResultAfterError = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 					actualCountAfterSequence = parseInt(verifyResultAfterError.rows[0].count)
 					// Ошибка в sequence не критична, продолжаем
 				}
@@ -97,7 +98,7 @@ export async function importTable(tableConfig, importDir) {
 			await client.query('COMMIT')
 
 			// Проверяем после коммита с НОВЫМ запросом
-			const verifyResultAfterCommit = await client.query(`SELECT COUNT(*) as count FROM ${tableConfig.name}`)
+			const verifyResultAfterCommit = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 			const actualCountAfterCommit = parseInt(verifyResultAfterCommit.rows[0].count)
 
 			logInsertResult(result.rowCount, tableConfig.name, dataLines.length, skippedRowsNum, actualCountBeforeSequence, actualCountAfterSequence, actualCountAfterCommit)
@@ -105,7 +106,7 @@ export async function importTable(tableConfig, importDir) {
 			// Дополнительная проверка: используем НОВОЕ подключение для проверки
 			const verifyClient = await getConnection()
 			try {
-				const verifyResultNewConnection = await verifyClient.query(`SELECT COUNT(*) as count FROM ${tableConfig.name}`)
+				const verifyResultNewConnection = await verifyClient.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 				const actualCountNewConnection = parseInt(verifyResultNewConnection.rows[0].count)
 				if (actualCountAfterCommit !== actualCountNewConnection) {
 					console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: ${tableConfig.name}: данные видны в текущем connection (${actualCountAfterCommit}), но не видны в новом connection (${actualCountNewConnection})!`)
@@ -157,30 +158,33 @@ async function insertData(client, tableConfig, values, placeholders, headers) {
 	const identityColumns = tableConfig.identityColumns ?? []
 
 	// Строим запрос с ON CONFLICT для обработки дубликатов
+	const quotedTableName = quoteIdentifier(tableConfig.name)
+	const quotedHeaders = headers.map(h => quoteIdentifier(h))
+	
 	let insertQuery
 	if (canUseOnConflict) {
 		// Если есть uuid и таблица поддерживает ON CONFLICT, используем его
 		const updatableColumns = headers.filter((h) => h !== 'uuid' && h !== 'created_at' && !identityColumns.includes(h))
 		if (updatableColumns.length > 0) {
-			const updateColumns = updatableColumns.map(h => `${h} = EXCLUDED.${h}`).join(', ')
+			const updateColumns = updatableColumns.map(h => `${quoteIdentifier(h)} = EXCLUDED.${quoteIdentifier(h)}`).join(', ')
 			insertQuery = `
-			INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+			INSERT INTO ${quotedTableName} (${quotedHeaders.join(', ')})
 			${overridingClause}
 			VALUES ${placeholders.join(', ')}
-			ON CONFLICT (uuid) DO UPDATE SET ${updateColumns}
+			ON CONFLICT (${quoteIdentifier('uuid')}) DO UPDATE SET ${updateColumns}
 		  `
 		} else {
 			insertQuery = `
-			INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+			INSERT INTO ${quotedTableName} (${quotedHeaders.join(', ')})
 			${overridingClause}
 			VALUES ${placeholders.join(', ')}
-			ON CONFLICT (uuid) DO NOTHING
+			ON CONFLICT (${quoteIdentifier('uuid')}) DO NOTHING
 		  `
 		}
 	} else {
 		// Обычный INSERT без ON CONFLICT
 		insertQuery = `
-		INSERT INTO ${tableConfig.name} (${headers.join(', ')})
+		INSERT INTO ${quotedTableName} (${quotedHeaders.join(', ')})
 		${overridingClause}
 		VALUES ${placeholders.join(', ')}
 	  `
@@ -197,7 +201,8 @@ export async function getTableStats(importTables) {
 		let client
 		try {
 			client = await getConnection()
-			const result = await client.query(`SELECT COUNT(*) as count FROM ${table.name}`)
+			const quotedTableName = quoteIdentifier(table.name)
+			const result = await client.query(`SELECT COUNT(*) as count FROM ${quotedTableName}`)
 			stats[table.name] = parseInt(result.rows[0].count)
 		} catch (error) {
 			stats[table.name] = 0
