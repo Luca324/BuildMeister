@@ -29,15 +29,3 @@ index 0cbe3c3..a3cf34b 100644
              exclude: {
                  and: [/node_modules/],
                  not: [
-diff --git a/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js b/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js
-index 1769f90..0761134 100644
---- a/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js
-+++ b/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js
-@@ -139,6 +139,7 @@ export default async (request, response, next) => {
-                 };
-                 if (billingAddress.province) {
-                     address.admin_area_1 = billingAddress.province.split('-').pop();
-+                    address.admin_area_2 = billingAddress.province.split('-').pop();
-                 }
-                 orderData.purchase_units[0].billing = {
-                     address
