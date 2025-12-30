@@ -17,7 +17,7 @@ index 0da00e1..d30e2b8 100644
                  sortOrder: 40
              },
 diff --git a/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js b/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
-index 0cbe3c3..4c1255a 100644
+index 0cbe3c3..a3cf34b 100644
 --- a/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
 +++ b/node_modules/@evershop/evershop/dist/lib/webpack/createBaseConfig.js
 @@ -22,7 +22,7 @@ export function createBaseConfig(isServer) {
@@ -29,32 +29,6 @@ index 0cbe3c3..4c1255a 100644
              exclude: {
                  and: [/node_modules/],
                  not: [
-@@ -101,19 +101,24 @@ export function createBaseConfig(isServer) {
-     }
-     // Resolve aliases
-     const alias = {
--        '@evershop/evershop/components': path.resolve(__dirname, '../../components')
-+        '@evershop/evershop/components': path.resolve(__dirname, '../../components'),
-+        '@evershop/evershop/lib': path.resolve(__dirname, '..')
-     };
-     if (theme) {
-         alias['@components'] = [path.resolve(theme.path, 'dist/components')];
-+        alias['@modules'] = [path.resolve(theme.path, 'dist/modules')];
-     }
-     else {
-         alias['@components'] = [];
-+        alias['@modules'] = [];
-     }
-     // Resolve alias for extensions
-     extenions.forEach((ext) => {
-         alias['@components'].push(path.resolve(ext.resolve, 'dist/components'));
-+        alias['@modules'].push(path.resolve(ext.resolve, 'dist/modules'));
-     });
-     alias['@components'].push(path.resolve(__dirname, '../../components'));
-+    alias['@modules'].push(path.resolve(__dirname, '../../modules'));
-     // Resolve alias for core components
-     alias['@components-origin'] = path.resolve(__dirname, '../../components');
-     // Avoid multiple react instances
 diff --git a/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js b/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js
 index 1769f90..0761134 100644
 --- a/node_modules/@evershop/evershop/dist/modules/paypal/api/paypalCreateOrder/[bodyParser]createOrder.js
