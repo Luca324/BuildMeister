@@ -19,10 +19,7 @@
     "isolatedModules": false,
     "noEmitOnError": false,
     "baseUrl": ".",
-    "rootDir": "./src",
-    "paths": {
-      "@components/*": ["../../node_modules/@evershop/evershop/dist/components/*"]
-    }
+    "rootDir": "./src"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
