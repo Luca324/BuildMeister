@@ -115,6 +115,23 @@ CategoriesWidget.defaultProps = {
   categoriesWidget: {},
 };
 
+/**
+ * GraphQL запрос для получения данных виджета
+ * 
+ * Структура запроса:
+ * 1. categoriesWidget(settings: $settings) - кастомный запрос для обработки настроек
+ *    - settings: настройки виджета из БД (получаются через getWidgetSetting())
+ *    - Возвращает обработанные categoryIds
+ * 
+ * 2. categories(filters: [...]) - стандартный запрос Evershop для получения категорий
+ *    - Использует фильтр category_id для получения только выбранных категорий
+ *    - Фильтр работает благодаря процессору registerCategoryIdFilter()
+ * 
+ * Зачем нужен categoriesWidget запрос?
+ * - Настройки виджета могут быть в разных форматах (массив, строка)
+ * - Resolver нормализует формат данных перед использованием
+ * - См. src/types/CategoriesWidget/CategoriesWidget.resolvers.ts
+ */
 export const query = `
   query Query($settings: JSON, $categoryIds: [String]) {
     categoriesWidget(settings: $settings) {
@@ -137,6 +154,25 @@ export const query = `
   }
 `;
 
+/**
+ * GraphQL переменные для запроса
+ * 
+ * getWidgetSetting() - функция Evershop для получения настроек виджета из БД
+ * 
+ * Как это работает:
+ * 1. Администратор настраивает виджет в админ-панели (выбирает категории)
+ * 2. Настройки сохраняются в таблице WIDGET.settings (JSON)
+ * 3. При рендеринге виджета getWidgetSetting() получает эти настройки
+ * 4. Настройки передаются в GraphQL запрос
+ * 
+ * getWidgetSetting() - возвращает весь объект настроек
+ * getWidgetSetting("categories", []) - возвращает конкретное поле или значение по умолчанию
+ * 
+ * Пример: если в БД settings = { categories: [1, 2, 3], title: "..." }
+ * - getWidgetSetting() → { categories: [1, 2, 3], title: "..." }
+ * - getWidgetSetting("categories", []) → [1, 2, 3]
+ * - getWidgetSetting("nonexistent", []) → []
+ */
 export const variables = `{
   settings: getWidgetSetting(),
   categoryIds: getWidgetSetting("categories", [])

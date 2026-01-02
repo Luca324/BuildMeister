@@ -154,6 +154,20 @@ CategoriesWidgetSetting.defaultProps = {
   },
 };
 
+/**
+ * GraphQL запрос для компонента настроек виджета
+ * 
+ * Этот запрос используется в админ-панели для отображения текущих настроек виджета.
+ * 
+ * categoriesWidget(settings: $settings) - кастомный GraphQL запрос
+ * - Получает настройки виджета через getWidgetSetting()
+ * - Resolver обрабатывает настройки и возвращает нормализованные данные
+ * - Используется для отображения выбранных категорий в форме настроек
+ * 
+ * См. также:
+ * - src/types/CategoriesWidget/CategoriesWidget.graphql - определение типа
+ * - src/types/CategoriesWidget/CategoriesWidget.resolvers.ts - обработка запроса
+ */
 export const query = `
   query Query($settings: JSON) {
     categoriesWidget(settings: $settings) {
@@ -162,6 +176,12 @@ export const query = `
   }
 `;
 
+/**
+ * GraphQL переменные
+ * 
+ * getWidgetSetting() - получает настройки виджета из БД
+ * В компоненте настроек это текущие сохраненные настройки виджета
+ */
 export const variables = `{
   settings: getWidgetSetting()
 }`;

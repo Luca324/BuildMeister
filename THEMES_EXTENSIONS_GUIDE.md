@@ -14,6 +14,8 @@
 
 ### Создание новой темы
 
+Подробнее: [Theme Structure](https://evershop.io/docs/development/theme/theme-overview)
+
 #### Шаг 1: Создание структуры папок
 
 Базовая структура темы выглядит так:
@@ -150,14 +152,21 @@ npm run tsc
 
 **Расширение** в Evershop — это модуль, который добавляет новую функциональность в магазин. В отличие от темы, расширения не меняют внешний вид, а добавляют новые возможности: виджеты, фильтры, страницы, GraphQL типы и т.д.
 
-
 **Примеры расширений:**
 - Виджет для отображения категорий
 - Кастомные фильтры для товаров
 - Дополнительные страницы (например, статусы заказов)
 - Интеграции с внешними сервисами
 
+**Ключевые концепции:**
+- **getWidgetSetting()** — функция для получения настроек виджета из БД (таблица `WIDGET.settings`)
+- **GraphQL типы** — нужны только если виджет использует кастомные запросы (не обязательны для всех расширений)
+- **Процессоры** — нужны только если виджет использует кастомные фильтры в GraphQL запросах
+- **Bootstrap файл** — точка входа расширения, где регистрируется вся функциональность
+
 ### Создание нового расширения
+
+Подробнее: [Extensions Documentation](https://evershop.io/docs/development/module)
 
 #### Шаг 1: Создание структуры папок
 
@@ -184,6 +193,8 @@ extensions/my-extension/
 #### 1. Регистрация виджета
 
 Виджет — это переиспользуемый компонент, который можно добавить на любую страницу через админ-панель.
+
+Подробнее: [Widgets Documentation](https://evershop.io/docs/development/widget)
 
 ```typescript
 // extensions/my-extension/src/bootstrap.ts
@@ -242,7 +253,16 @@ MyWidget.propTypes = {
   }),
 };
 
-// GraphQL запрос для получения данных виджета
+/**
+ * GraphQL запрос для получения данных виджета
+ * 
+ * getWidgetSetting() - функция Evershop для получения настроек виджета из БД
+ * Настройки сохраняются в таблице WIDGET.settings (JSON) когда администратор
+ * настраивает виджет в админ-панели.
+ * 
+ * Если виджет использует только стандартные запросы Evershop (products, categories),
+ * кастомный GraphQL тип не нужен. См. пример ниже.
+ */
 export const query = `
   query Query($settings: JSON) {
     myWidget(settings: $settings) {
@@ -256,9 +276,40 @@ export const variables = `{
 }`;
 ```
 
+**Упрощенный пример без кастомного GraphQL:**
+
+Если виджет простой и не требует обработки настроек, можно использовать только стандартные запросы:
+
+```jsx
+// Простой виджет - показывает коллекцию товаров
+export const query = `
+  query Query($collection: String) {
+    collection(code: $collection) {
+      name
+      products { items { name price } }
+    }
+  }
+`;
+
+export const variables = `{
+  collection: getWidgetSetting("collection")  // Просто получаем настройку
+}`;
+```
+
+В этом случае кастомный GraphQL тип и resolver не нужны.
+
 #### 2. Регистрация процессора (фильтр, хук)
 
-Процессоры позволяют модифицировать поведение системы на разных этапах выполнения.
+Процессоры позволяют модифицировать поведение системы на разных этапах выполнения. Они используются для добавления новых фильтров для коллекций (товаров, категорий и т.д.).
+
+**Зачем нужны процессоры:**
+- Виджет использует фильтр в GraphQL запросе (например, `category_id`)
+- Без процессора этот фильтр не будет работать
+- Процессор добавляет поддержку фильтра в SQL запросы
+
+**Когда НЕ нужны процессоры:**
+- Виджет использует только стандартные фильтры Evershop
+- Виджет не использует фильтрацию в GraphQL запросах
 
 **Пример:** Регистрация фильтра для коллекций
 
@@ -322,6 +373,10 @@ extensions/my-extension/src/pages/frontStore/account/MyPage.jsx
 
 #### 4. Регистрация GraphQL типов
 
+**Важно:** GraphQL типы нужны НЕ для всех расширений. Они требуются только если:
+- Виджет использует кастомный GraphQL запрос (не стандартные `products`, `categories`, `collection`)
+- Нужна обработка настроек виджета перед основным запросом
+
 Создайте файл с расширением GraphQL схемы:
 
 ```graphql
@@ -339,7 +394,25 @@ extend type Query {
 }
 ```
 
-Evershop автоматически найдет и загрузит этот файл.
+**Создайте resolver для обработки запроса:**
+
+```typescript
+// extensions/my-extension/src/types/MyWidget/MyWidget.resolvers.ts
+export default {
+  Query: {
+    myWidget: async (root: any, { settings }: { settings?: any }) => {
+      // Обработка настроек виджета
+      // Нормализация данных, валидация и т.д.
+      return {
+        title: settings?.title || "Default",
+        items: settings?.items || []
+      };
+    }
+  }
+};
+```
+
+Evershop автоматически найдет и загрузит эти файлы при загрузке расширения.
 
 ### Компиляция и активация расширения
 
@@ -391,20 +464,32 @@ npm run build
 
 ### Практические примеры
 
-#### Пример 1: Простой виджет
+#### Пример 1: Полный пример расширения categories_widget
 
-Полный пример виджета для отображения категорий:
+Этот пример показывает реальное расширение с виджетом, процессором и кастомным GraphQL типом.
+
+**1. Bootstrap файл** (`src/bootstrap.ts`)
 
 ```typescript
 // extensions/categories_widget/src/bootstrap.ts
 import path from "path";
 import { fileURLToPath } from "url";
 import { registerWidget } from "@evershop/evershop/lib/widget";
+import registerCategoryIdFilter from "./services/registerCategoryIdFilter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Bootstrap функция - точка входа расширения
+ * Регистрирует виджет и процессор фильтра
+ */
 export default () => {
+  // Регистрация процессора для фильтра category_id
+  // Без этого процессора фильтр category_id не будет работать в GraphQL запросах
+  registerCategoryIdFilter();
+  
+  // Регистрация виджета
   registerWidget({
     type: "categories_widget",
     name: "Categories Widget",
@@ -425,6 +510,200 @@ export default () => {
 };
 ```
 
+**2. Компонент виджета** (`src/components/widgets/CategoriesWidget.tsx`)
+
+```jsx
+// extensions/categories_widget/src/components/widgets/CategoriesWidget.tsx
+import React from 'react';
+import PropTypes from 'prop-types';
+
+export default function CategoriesWidget({ categories }) {
+  const categoriesList = Array.isArray(categories) 
+    ? categories 
+    : (categories?.items || []);
+  
+  if (!categoriesList || categoriesList.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="categories__widget">
+      {categoriesList.map((category) => (
+        <a key={category.uuid} href={category.url}>
+          {category.name}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * GraphQL запрос для получения данных виджета
+ * 
+ * Структура:
+ * 1. categoriesWidget(settings: $settings) - кастомный запрос для обработки настроек
+ * 2. categories(filters: [...]) - стандартный запрос для получения категорий
+ *    Использует фильтр category_id, который работает благодаря процессору
+ */
+export const query = `
+  query Query($settings: JSON, $categoryIds: [String]) {
+    categoriesWidget(settings: $settings) {
+      categories
+    }
+    categories(filters: [
+      {key: "category_id", operation: in, value: $categoryIds}
+    ]) {
+      items {
+        categoryId
+        uuid
+        name
+        url
+        image { url alt }
+      }
+    }
+  }
+`;
+
+/**
+ * GraphQL переменные
+ * 
+ * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
+ * Настройки сохраняются когда администратор настраивает виджет в админ-панели
+ */
+export const variables = `{
+  settings: getWidgetSetting(),
+  categoryIds: getWidgetSetting("categories", [])
+}`;
+```
+
+**3. Компонент настроек виджета** (`src/components/widgets/CategoriesWidgetSetting.tsx`)
+
+Компонент для настройки виджета в админ-панели. Позволяет администратору выбрать категории для отображения.
+
+```jsx
+// extensions/categories_widget/src/components/widgets/CategoriesWidgetSetting.tsx
+export default function CategoriesWidgetSetting({
+  categoriesWidget: { categories = [] },
+}) {
+  // UI для выбора категорий
+  // Сохраняет выбранные категории в settings.categories
+  return (
+    <div>
+      {/* Форма выбора категорий */}
+    </div>
+  );
+}
+
+// GraphQL запрос для получения текущих настроек
+export const query = `
+  query Query($settings: JSON) {
+    categoriesWidget(settings: $settings) {
+      categories
+    }
+  }
+`;
+
+export const variables = `{
+  settings: getWidgetSetting()
+}`;
+```
+
+**4. GraphQL схема** (`src/types/CategoriesWidget/CategoriesWidget.graphql`)
+
+```graphql
+"""
+A widget that displays selected categories
+"""
+type CategoriesWidget {
+  categories: [String]
+}
+
+extend type Query {
+  categoriesWidget(settings: JSON): CategoriesWidget
+}
+```
+
+**5. GraphQL resolver** (`src/types/CategoriesWidget/CategoriesWidget.resolvers.ts`)
+
+```typescript
+// extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.resolvers.ts
+export default {
+  Query: {
+    categoriesWidget: async (root: any, { settings }: { settings?: any }) => {
+      // Обрабатываем настройки виджета
+      // Нормализуем формат данных (массив, строка и т.д.)
+      let categories: number[] = [];
+      if (settings?.categories) {
+        if (Array.isArray(settings.categories)) {
+          categories = settings.categories
+            .map((id: string | number) => typeof id === 'string' ? parseInt(id, 10) : id)
+            .filter((id: number) => !isNaN(id));
+        }
+      }
+      
+      return {
+        categories: categories.map(id => id.toString())
+      };
+    }
+  }
+};
+```
+
+**6. Процессор фильтра** (`src/services/registerCategoryIdFilter.ts`)
+
+```typescript
+// extensions/categories_widget/src/services/registerCategoryIdFilter.ts
+import { addProcessor } from '@evershop/evershop/lib/util/registry';
+import { value } from '@evershop/postgres-query-builder';
+
+export default () => {
+  /**
+   * Регистрация процессора для фильтра category_id
+   * 
+   * Без этого процессора фильтр category_id не будет работать в GraphQL запросах
+   * Процессор добавляет SQL условие: WHERE category.category_id IN (1, 2, 3)
+   */
+  addProcessor('categoryCollectionFilters', (filters: any[]) => {
+    filters.push({
+      key: 'category_id',
+      operation: ['in', 'eq'],
+      callback: (query: any, operation: string, val: any) => {
+        if (operation === 'in') {
+          const ids = Array.isArray(val)
+            ? val.map((v) => parseInt(v, 10)).filter((v) => !isNaN(v))
+            : [];
+          
+          if (ids.length > 0) {
+            query.andWhere('category.category_id', 'IN', value(ids));
+          }
+        }
+      },
+    });
+    return filters;
+  }, 10);
+};
+```
+
+**Как это работает вместе:**
+
+1. Администратор настраивает виджет в админ-панели (выбирает категории)
+2. Настройки сохраняются в БД (таблица `WIDGET.settings`)
+3. Виджет рендерится на странице
+4. `getWidgetSetting()` получает настройки из БД
+5. Настройки передаются в `categoriesWidget(settings: {...})`
+6. Resolver обрабатывает настройки и возвращает `categoryIds`
+7. Виджет запрашивает категории с фильтром `category_id`
+8. Процессор обрабатывает фильтр и добавляет SQL условие
+9. Виджет получает данные и отображает их
+
+**Ссылки на файлы:**
+- [Bootstrap](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/bootstrap.ts)
+- [Компонент виджета](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/components/widgets/CategoriesWidget.tsx)
+- [Компонент настроек](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/components/widgets/CategoriesWidgetSetting.tsx)
+- [GraphQL схема](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.graphql)
+- [GraphQL resolver](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.resolvers.ts)
+- [Процессор фильтра](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/services/registerCategoryIdFilter.ts)
+
 #### Пример 2: Расширение с фильтром и страницами
 
 ```typescript
@@ -444,8 +723,16 @@ extensions/order_status_display/src/pages/frontStore/account/
 
 ## Полезные ссылки
 
+### Официальная документация Evershop
+
 - [Theme Overview](https://evershop.io/docs/development/theme) — общий обзор системы тем
 - [The View System](https://evershop.io/docs/development/theme/view-system) — подробно о системе Area и композиции
 - [Templating](https://evershop.io/docs/development/theme/templating) — система шаблонов и компонентов
 - [Theme Structure](https://evershop.io/docs/development/theme/theme-overview) — структура темы и организация файлов
+- [Widgets](https://evershop.io/docs/development/module/widget-development) — документация по виджетам
+- [Extensions](https://evershop.io/docs/development/module/extension-development) — документация по расширениям
+
+### Дополнительные ресурсы
+
+- [GraphQL в Evershop](https://evershop.io/docs/development/knowledge-base/graphql) — работа с GraphQL запросами
 
