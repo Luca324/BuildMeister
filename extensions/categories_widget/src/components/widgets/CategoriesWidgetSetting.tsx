@@ -63,11 +63,25 @@ export default function CategoriesWidgetSetting({
 }: {
   categoriesWidget: { categories?: string[] | string };
 }) {
-  const initialCategories: number[] = Array.isArray(categories) 
-    ? categories.map((c: string | number) => typeof c === 'string' ? parseInt(c, 10) : c).filter((id: number) => !isNaN(id))
-    : (typeof categories === 'string' ? categories.split(',').map((c: string) => parseInt(c.trim(), 10)).filter((id: number) => !isNaN(id)) : []);
+  // Обрабатываем формат настроек (массив строк → массив чисел)
+  // Используем useMemo для вычисления категорий из props
+  const initialCategories = React.useMemo(() => {
+    return Array.isArray(categories) 
+      ? categories.map((c: string | number) => typeof c === 'string' ? parseInt(c, 10) : c).filter((id: number) => !isNaN(id))
+      : (typeof categories === 'string' ? categories.split(',').map((c: string) => parseInt(c.trim(), 10)).filter((id: number) => !isNaN(id)) : []);
+  }, [categories]);
 
   const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>(initialCategories);
+  
+  // Обновляем состояние при изменении props (когда данные загрузятся из GraphQL)
+  // Обновляем только если категории действительно изменились
+  React.useEffect(() => {
+    const currentIds = [...selectedCategoryIds].sort().join(',');
+    const newIds = [...initialCategories].sort().join(',');
+    if (currentIds !== newIds) {
+      setSelectedCategoryIds(initialCategories);
+    }
+  }, [initialCategories]);
   const modal = useModal();
 
   const closeModal = () => {
@@ -155,18 +169,14 @@ CategoriesWidgetSetting.defaultProps = {
 };
 
 /**
- * GraphQL запрос для компонента настроек виджета
+ * GraphQL запрос для получения настроек виджета
  * 
- * Этот запрос используется в админ-панели для отображения текущих настроек виджета.
+ * Этот запрос получает текущие настройки виджета из БД и передает их в компонент
+ * через props (categoriesWidget). Это необходимо для отображения уже выбранных категорий
+ * при открытии страницы настроек виджета в админ-панели.
  * 
- * categoriesWidget(settings: $settings) - кастомный GraphQL запрос
- * - Получает настройки виджета через getWidgetSetting()
- * - Resolver обрабатывает настройки и возвращает нормализованные данные
- * - Используется для отображения выбранных категорий в форме настроек
- * 
- * См. также:
- * - src/types/CategoriesWidget/CategoriesWidget.graphql - определение типа
- * - src/types/CategoriesWidget/CategoriesWidget.resolvers.ts - обработка запроса
+ * Формат настроек из БД: { categories: ["16", "17"] } (массив строк)
+ * Resolver просто возвращает настройки без обработки.
  */
 export const query = `
   query Query($settings: JSON) {
@@ -179,7 +189,7 @@ export const query = `
 /**
  * GraphQL переменные
  * 
- * getWidgetSetting() - получает настройки виджета из БД
+ * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
  * В компоненте настроек это текущие сохраненные настройки виджета
  */
 export const variables = `{

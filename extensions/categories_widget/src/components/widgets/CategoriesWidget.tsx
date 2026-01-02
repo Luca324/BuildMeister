@@ -118,25 +118,14 @@ CategoriesWidget.defaultProps = {
 /**
  * GraphQL запрос для получения данных виджета
  * 
- * Структура запроса:
- * 1. categoriesWidget(settings: $settings) - кастомный запрос для обработки настроек
- *    - settings: настройки виджета из БД (получаются через getWidgetSetting())
- *    - Возвращает обработанные categoryIds
+ * Использует стандартный запрос Evershop categories с фильтром category_id.
+ * Фильтр работает благодаря процессору registerCategoryIdFilter().
  * 
- * 2. categories(filters: [...]) - стандартный запрос Evershop для получения категорий
- *    - Использует фильтр category_id для получения только выбранных категорий
- *    - Фильтр работает благодаря процессору registerCategoryIdFilter()
- * 
- * Зачем нужен categoriesWidget запрос?
- * - Настройки виджета могут быть в разных форматах (массив, строка)
- * - Resolver нормализует формат данных перед использованием
- * - См. src/types/CategoriesWidget/CategoriesWidget.resolvers.ts
+ * Формат настроек из БД: { categories: ["16", "17"] } (массив строк)
+ * Процессор автоматически преобразует строки в числа для SQL запроса.
  */
 export const query = `
-  query Query($settings: JSON, $categoryIds: [String]) {
-    categoriesWidget(settings: $settings) {
-      categories
-    }
+  query Query($categoryIds: [String]) {
     categories(filters: [
       {key: "category_id", operation: in, value: $categoryIds}
     ]) {
@@ -157,23 +146,19 @@ export const query = `
 /**
  * GraphQL переменные для запроса
  * 
- * getWidgetSetting() - функция Evershop для получения настроек виджета из БД
+ * getWidgetSetting("categories", []) - получает массив ID категорий из настроек виджета
  * 
  * Как это работает:
  * 1. Администратор настраивает виджет в админ-панели (выбирает категории)
- * 2. Настройки сохраняются в таблице WIDGET.settings (JSON)
- * 3. При рендеринге виджета getWidgetSetting() получает эти настройки
- * 4. Настройки передаются в GraphQL запрос
+ * 2. Настройки сохраняются в таблице WIDGET.settings (JSON): { categories: ["16", "17"] }
+ * 3. При рендеринге виджета getWidgetSetting("categories", []) получает этот массив
+ * 4. Массив передается в GraphQL запрос как фильтр
+ * 5. Процессор registerCategoryIdFilter преобразует строки в числа для SQL
  * 
- * getWidgetSetting() - возвращает весь объект настроек
- * getWidgetSetting("categories", []) - возвращает конкретное поле или значение по умолчанию
- * 
- * Пример: если в БД settings = { categories: [1, 2, 3], title: "..." }
- * - getWidgetSetting() → { categories: [1, 2, 3], title: "..." }
- * - getWidgetSetting("categories", []) → [1, 2, 3]
- * - getWidgetSetting("nonexistent", []) → []
+ * Пример: если в БД settings = { categories: ["16", "17"] }
+ * - getWidgetSetting("categories", []) → ["16", "17"]
+ * - Процессор преобразует в [16, 17] для SQL запроса
  */
 export const variables = `{
-  settings: getWidgetSetting(),
   categoryIds: getWidgetSetting("categories", [])
 }`;

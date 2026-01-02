@@ -160,9 +160,12 @@ npm run tsc
 
 **Ключевые концепции:**
 - **getWidgetSetting()** — функция для получения настроек виджета из БД (таблица `WIDGET.settings`)
-- **GraphQL типы** — нужны только если виджет использует кастомные запросы (не обязательны для всех расширений)
+  - Формат: `{ categories: ["16", "17"] }` (массив строк)
+  - Использование: `getWidgetSetting("categories", [])` → `["16", "17"]`
 - **Процессоры** — нужны только если виджет использует кастомные фильтры в GraphQL запросах
+  - Процессор автоматически преобразует строки в числа для SQL запросов
 - **Bootstrap файл** — точка входа расширения, где регистрируется вся функциональность
+- **GraphQL типы** — в большинстве случаев НЕ нужны, используются только стандартные запросы Evershop
 
 ### Создание нового расширения
 
@@ -181,11 +184,10 @@ extensions/my-extension/
     ├── components/       # React компоненты
     │   └── widgets/      # Компоненты виджетов
     ├── services/         # Сервисы (регистрация фильтров, процессоров)
-    ├── pages/            # Дополнительные страницы (опционально)
-    └── types/            # GraphQL типы (опционально)
-        └── MyType/
-            └── MyType.graphql
+    └── pages/            # Дополнительные страницы (опционально)
 ```
+
+**Примечание:** GraphQL типы (`src/graphql/` или `src/types/`) нужны только в редких случаях, когда требуется кастомная обработка данных на сервере. В большинстве случаев достаточно стандартных GraphQL запросов Evershop (`products`, `categories`, `collection`).
 
 
 ### Регистрация функциональности
@@ -371,16 +373,32 @@ extensions/my-extension/src/pages/frontStore/account/MyPage.jsx
 
 Компонент автоматически будет доступен на роуте `/account/my-page`.
 
-#### 4. Регистрация GraphQL типов
+#### 4. Регистрация GraphQL типов (опционально, редко нужно)
 
-**Важно:** GraphQL типы нужны НЕ для всех расширений. Они требуются только если:
-- Виджет использует кастомный GraphQL запрос (не стандартные `products`, `categories`, `collection`)
-- Нужна обработка настроек виджета перед основным запросом
+**Важно:** GraphQL типы нужны НЕ для всех расширений. В большинстве случаев они НЕ требуются.
 
-Создайте файл с расширением GraphQL схемы:
+**Когда GraphQL типы НЕ нужны (большинство случаев):**
+- Виджет использует стандартные запросы Evershop (`products`, `categories`, `collection`)
+- Настройки виджета имеют простой формат (массивы, строки, числа)
+- Процессоры могут обработать данные в нужном формате
+- Пример: `categories_widget` — использует только стандартный запрос `categories` с фильтром
+
+**Когда GraphQL типы могут понадобиться (редкие случаи):**
+- Сложная бизнес-логика обработки настроек на сервере
+- Необходимость объединения данных из нескольких источников
+- Специфические вычисления, которые нельзя сделать на клиенте
+- Кастомные типы данных, которых нет в стандартной схеме Evershop
+
+**Пример расширения БЕЗ GraphQL типов (как `categories_widget`):**
+- Настройки: `{ categories: ["16", "17"] }` (простой формат)
+- GraphQL запрос: стандартный `categories` с фильтром
+- Обработка: процессор преобразует строки в числа
+- Результат: код проще, меньше файлов, легче поддерживать
+
+Создайте файл с расширением GraphQL схемы (только если действительно нужен):
 
 ```graphql
-# extensions/my-extension/src/types/MyWidget/MyWidget.graphql
+# extensions/my-extension/src/graphql/types/MyWidget/MyWidget.graphql
 """
 Описание типа
 """
@@ -397,7 +415,7 @@ extend type Query {
 **Создайте resolver для обработки запроса:**
 
 ```typescript
-// extensions/my-extension/src/types/MyWidget/MyWidget.resolvers.ts
+// extensions/my-extension/src/graphql/types/MyWidget/MyWidget.resolvers.ts
 export default {
   Query: {
     myWidget: async (root: any, { settings }: { settings?: any }) => {
@@ -466,7 +484,7 @@ npm run build
 
 #### Пример 1: Полный пример расширения categories_widget
 
-Этот пример показывает реальное расширение с виджетом, процессором и кастомным GraphQL типом.
+Этот пример показывает реальное расширение с виджетом и процессором фильтра.
 
 **1. Bootstrap файл** (`src/bootstrap.ts`)
 
@@ -540,16 +558,14 @@ export default function CategoriesWidget({ categories }) {
 /**
  * GraphQL запрос для получения данных виджета
  * 
- * Структура:
- * 1. categoriesWidget(settings: $settings) - кастомный запрос для обработки настроек
- * 2. categories(filters: [...]) - стандартный запрос для получения категорий
- *    Использует фильтр category_id, который работает благодаря процессору
+ * Использует стандартный запрос Evershop categories с фильтром category_id.
+ * Фильтр работает благодаря процессору registerCategoryIdFilter().
+ * 
+ * Формат настроек из БД: { categories: ["16", "17"] } (массив строк)
+ * Процессор автоматически преобразует строки в числа для SQL запроса.
  */
 export const query = `
-  query Query($settings: JSON, $categoryIds: [String]) {
-    categoriesWidget(settings: $settings) {
-      categories
-    }
+  query Query($categoryIds: [String]) {
     categories(filters: [
       {key: "category_id", operation: in, value: $categoryIds}
     ]) {
@@ -567,11 +583,12 @@ export const query = `
 /**
  * GraphQL переменные
  * 
- * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
- * Настройки сохраняются когда администратор настраивает виджет в админ-панели
+ * getWidgetSetting("categories", []) - получает массив ID категорий из настроек виджета
+ * 
+ * Формат: ["16", "17"] (массив строк из БД)
+ * Процессор преобразует строки в числа для SQL запроса
  */
 export const variables = `{
-  settings: getWidgetSetting(),
   categoryIds: getWidgetSetting("categories", [])
 }`;
 ```
@@ -585,6 +602,17 @@ export const variables = `{
 export default function CategoriesWidgetSetting({
   categoriesWidget: { categories = [] },
 }) {
+  // Настройки приходят через props автоматически из БД
+  // Формат: { categories: ["16", "17"] } (массив строк)
+  
+  // Обрабатываем формат настроек (массив строк → массив чисел)
+  const initialCategories: number[] = Array.isArray(categories) 
+    ? categories.map((c: string | number) => typeof c === 'string' ? parseInt(c, 10) : c)
+      .filter((id: number) => !isNaN(id))
+    : [];
+  
+  const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>(initialCategories);
+  
   // UI для выбора категорий
   // Сохраняет выбранные категории в settings.categories
   return (
@@ -594,62 +622,10 @@ export default function CategoriesWidgetSetting({
   );
 }
 
-// GraphQL запрос для получения текущих настроек
-export const query = `
-  query Query($settings: JSON) {
-    categoriesWidget(settings: $settings) {
-      categories
-    }
-  }
-`;
-
-export const variables = `{
-  settings: getWidgetSetting()
-}`;
+// GraphQL запрос не требуется - настройки приходят через props
 ```
 
-**4. GraphQL схема** (`src/types/CategoriesWidget/CategoriesWidget.graphql`)
-
-```graphql
-"""
-A widget that displays selected categories
-"""
-type CategoriesWidget {
-  categories: [String]
-}
-
-extend type Query {
-  categoriesWidget(settings: JSON): CategoriesWidget
-}
-```
-
-**5. GraphQL resolver** (`src/types/CategoriesWidget/CategoriesWidget.resolvers.ts`)
-
-```typescript
-// extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.resolvers.ts
-export default {
-  Query: {
-    categoriesWidget: async (root: any, { settings }: { settings?: any }) => {
-      // Обрабатываем настройки виджета
-      // Нормализуем формат данных (массив, строка и т.д.)
-      let categories: number[] = [];
-      if (settings?.categories) {
-        if (Array.isArray(settings.categories)) {
-          categories = settings.categories
-            .map((id: string | number) => typeof id === 'string' ? parseInt(id, 10) : id)
-            .filter((id: number) => !isNaN(id));
-        }
-      }
-      
-      return {
-        categories: categories.map(id => id.toString())
-      };
-    }
-  }
-};
-```
-
-**6. Процессор фильтра** (`src/services/registerCategoryIdFilter.ts`)
+**4. Процессор фильтра** (`src/services/registerCategoryIdFilter.ts`)
 
 ```typescript
 // extensions/categories_widget/src/services/registerCategoryIdFilter.ts
@@ -687,22 +663,39 @@ export default () => {
 **Как это работает вместе:**
 
 1. Администратор настраивает виджет в админ-панели (выбирает категории)
-2. Настройки сохраняются в БД (таблица `WIDGET.settings`)
+2. Настройки сохраняются в БД (таблица `WIDGET.settings`): `{ categories: ["16", "17"] }`
 3. Виджет рендерится на странице
-4. `getWidgetSetting()` получает настройки из БД
-5. Настройки передаются в `categoriesWidget(settings: {...})`
-6. Resolver обрабатывает настройки и возвращает `categoryIds`
-7. Виджет запрашивает категории с фильтром `category_id`
-8. Процессор обрабатывает фильтр и добавляет SQL условие
-9. Виджет получает данные и отображает их
+4. `getWidgetSetting("categories", [])` получает массив ID категорий из БД: `["16", "17"]`
+5. Массив передается в GraphQL запрос как фильтр `category_id`
+6. Процессор `registerCategoryIdFilter` обрабатывает фильтр:
+   - Преобразует строки в числа: `["16", "17"]` → `[16, 17]`
+   - Добавляет SQL условие: `WHERE category.category_id IN (16, 17)`
+7. Виджет получает данные категорий и отображает их
+
+**Структура файлов расширения:**
+
+```
+extensions/categories_widget/
+├── src/
+│   ├── bootstrap.ts                          # Регистрация виджета и процессора
+│   ├── components/
+│   │   └── widgets/
+│   │       ├── CategoriesWidget.tsx         # Основной компонент виджета
+│   │       └── CategoriesWidgetSetting.tsx # Компонент настроек (админка)
+│   └── services/
+│       └── registerCategoryIdFilter.ts      # Процессор фильтра
+```
 
 **Ссылки на файлы:**
 - [Bootstrap](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/bootstrap.ts)
 - [Компонент виджета](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/components/widgets/CategoriesWidget.tsx)
 - [Компонент настроек](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/components/widgets/CategoriesWidgetSetting.tsx)
-- [GraphQL схема](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.graphql)
-- [GraphQL resolver](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/types/CategoriesWidget/CategoriesWidget.resolvers.ts)
 - [Процессор фильтра](https://github.com/Luca324/BuildMeister/blob/master/extensions/categories_widget/src/services/registerCategoryIdFilter.ts)
+
+**Примечание:** GraphQL типы и resolver не требуются, так как:
+- Настройки виджета имеют простой формат: `{ categories: ["16", "17"] }` (массив строк)
+- Процессор автоматически преобразует строки в числа для SQL запроса
+- Виджет использует только стандартный GraphQL запрос `categories`
 
 #### Пример 2: Расширение с фильтром и страницами
 
@@ -734,5 +727,8 @@ extensions/order_status_display/src/pages/frontStore/account/
 
 ### Дополнительные ресурсы
 
-- [GraphQL в Evershop](https://evershop.io/docs/development/knowledge-base/graphql) — работа с GraphQL запросами
+- [GraphQL в Evershop](https://evershop.io/docs/development/knowledge-base/graphql) — работа с GraphQL запросами, определение типов и resolvers
+- [Data Fetching](https://evershop.io/docs/development/knowledge-base/data-fetching) — как работает получение данных в Evershop
+
+**Примечание:** Документации по процессорам (processors) в официальной документации нет. Процессоры используются для расширения функциональности фильтров в GraphQL запросах. См. примеры в разделе "Регистрация процессора" выше.
 
