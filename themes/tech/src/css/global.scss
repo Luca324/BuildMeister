@@ -73,6 +73,17 @@ html body {
   object-fit: contain;
 }
 
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button[disabled]:hover {
+  background-color: var(--primary) !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
 
   .header .page-width > div:nth-child(1) {
