@@ -14,10 +14,7 @@ import { value } from '@evershop/postgres-query-builder'
  * Зачем нужен этот процессор?
  * - Виджет использует фильтр по category_id в GraphQL запросе:
  *   categories(filters: [{key: "category_id", operation: in, value: [1, 2, 3]}])
- * 
- * - Без этого процессора фильтр category_id не будет работать
- * - Evershop не знает, как обработать фильтр category_id по умолчанию
- * - Процессор добавляет поддержку этого фильтра
+ * - Evershop не знает, как обработать фильтр category_id по умолчанию. Процессор добавляет поддержку этого фильтра
  * 
  * Как это работает:
  * 1. Виджет делает GraphQL запрос с фильтром category_id

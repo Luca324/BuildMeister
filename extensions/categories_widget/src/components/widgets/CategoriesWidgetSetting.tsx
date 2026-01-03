@@ -169,29 +169,11 @@ CategoriesWidgetSetting.defaultProps = {
 };
 
 /**
- * GraphQL запрос для получения настроек виджета
+ * GraphQL запрос не требуется
  * 
- * Этот запрос получает текущие настройки виджета из БД и передает их в компонент
- * через props (categoriesWidget). Это необходимо для отображения уже выбранных категорий
- * при открытии страницы настроек виджета в админ-панели.
+ * Настройки виджета приходят через props (categoriesWidget), которые заполняются
+ * автоматически системой Evershop из БД. Дополнительный GraphQL запрос не нужен.
  * 
  * Формат настроек из БД: { categories: ["16", "17"] } (массив строк)
- * Resolver просто возвращает настройки без обработки.
+ * Компонент обрабатывает этот формат в функции initialCategories (строка 68-72).
  */
-export const query = `
-  query Query($settings: JSON) {
-    categoriesWidget(settings: $settings) {
-      categories
-    }
-  }
-`;
-
-/**
- * GraphQL переменные
- * 
- * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
- * В компоненте настроек это текущие сохраненные настройки виджета
- */
-export const variables = `{
-  settings: getWidgetSetting()
-}`;
