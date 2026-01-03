@@ -38,20 +38,17 @@ export default () => {
    * - defaultSettings: настройки по умолчанию (сохраняются в БД при создании)
    */
   registerWidget({
-    type: "categories_widget",
-    name: "Categories Widget",
-    description: "Display selected categories",
-    settingComponent: path.resolve(
+    type: "categories_widget", // уникальный идентификатор виджета (используется в БД)
+    name: "Categories Widget", // название в админке
+    description: "Display selected categories", // описание 
+    settingComponent: path.resolve( // компонент настроек для админки
       __dirname,
       "components/widgets/CategoriesWidgetSetting.js"
     ),
-    component: path.resolve(
+    component: path.resolve( // основной компонент виджета (отображается на фронтенде)
       __dirname,
-      "components/widgets/CategoriesWidget.js"
-    ),
-    enabled: true,
-    defaultSettings: {
-      categories: [],
-    },
+      "components/widgets/CategoriesWidget.js"),
+    enabled: true, // включен ли виджет
+    defaultSettings: { categories: [] }, // настройки по умолчанию (сохраняются в БД при создании)
   });
 };

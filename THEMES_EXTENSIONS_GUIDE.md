@@ -237,69 +237,70 @@ export default () => {
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default function MyWidget({ myWidget }) {
-  if (!myWidget) {
+export default function MyWidget({ collection }) {
+  if (!collection) {
     return null;
   }
 
   return (
     <div className="my-widget">
-      <h3>{myWidget.title}</h3>
-      {/* Ваш контент */}
+      <h3>{collection.name}</h3>
+      <div>
+        {collection.products?.items?.map((product) => (
+          <div key={product.uuid}>{product.name} - {product.price}</div>
+        ))}
+      </div>
     </div>
   );
 }
 
 MyWidget.propTypes = {
-  myWidget: PropTypes.shape({
-    title: PropTypes.string,
+  collection: PropTypes.shape({
+    name: PropTypes.string,
+    products: PropTypes.shape({
+      items: PropTypes.arrayOf(PropTypes.shape({
+        uuid: PropTypes.string,
+        name: PropTypes.string,
+        price: PropTypes.string,
+      })),
+    }),
   }),
 };
 
 /**
  * GraphQL запрос для получения данных виджета
  * 
- * getWidgetSetting() - функция Evershop для получения настроек виджета из БД
+ * Используется стандартный запрос Evershop collection.
+ * getWidgetSetting("collection") - получает настройку виджета из БД.
+ * 
  * Настройки сохраняются в таблице WIDGET.settings (JSON) когда администратор
  * настраивает виджет в админ-панели.
  * 
- * Если виджет использует только стандартные запросы Evershop (products, categories),
- * кастомный GraphQL тип не нужен. См. пример ниже.
+ * Кастомный GraphQL тип не нужен - используются только стандартные запросы Evershop.
  */
-export const query = `
-  query Query($settings: JSON) {
-    myWidget(settings: $settings) {
-      title
-    }
-  }
-`;
-
-export const variables = `{
-  settings: getWidgetSetting()
-}`;
-```
-
-**Упрощенный пример без кастомного GraphQL:**
-
-Если виджет простой и не требует обработки настроек, можно использовать только стандартные запросы:
-
-```jsx
-// Простой виджет - показывает коллекцию товаров
 export const query = `
   query Query($collection: String) {
     collection(code: $collection) {
       name
-      products { items { name price } }
+      products {
+        items {
+          uuid
+          name
+          price {
+            text
+          }
+        }
+      }
     }
   }
 `;
 
 export const variables = `{
-  collection: getWidgetSetting("collection")  // Просто получаем настройку
+  collection: getWidgetSetting("collection", "")
 }`;
 ```
 
-В этом случае кастомный GraphQL тип и resolver не нужны.
+**Примечание:** В большинстве случаев виджеты используют только стандартные GraphQL запросы Evershop (`products`, `categories`, `collection`). Кастомные GraphQL типы нужны только в редких случаях для сложной бизнес-логики.
 
 #### 2. Регистрация процессора (фильтр, хук)
 
@@ -364,15 +365,6 @@ export default () => {
 };
 ```
 
-#### 3. Регистрация страниц
-
-Страницы регистрируются автоматически через структуру папок `src/pages/`, аналогично темам:
-
-```
-extensions/my-extension/src/pages/frontStore/account/MyPage.jsx
-```
-
-Компонент автоматически будет доступен на роуте `/account/my-page`.
 
 #### 4. Регистрация GraphQL типов (опционально, редко нужно)
 
