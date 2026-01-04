@@ -63,8 +63,6 @@ export default function CategoriesWidgetSetting({
 }: {
   categoriesWidget: { categories?: string[] };
 }) {
-  console.log(`categories\n${JSON.stringify(categories)}`);
-  
   // Обрабатываем формат настроек (массив строк → массив чисел)
   // Используем useMemo для вычисления категорий из props
   const initialCategories = React.useMemo(() => {
