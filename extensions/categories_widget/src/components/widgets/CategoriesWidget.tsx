@@ -20,7 +20,6 @@ interface CategoriesWidgetProps {
 export default function CategoriesWidget({
   categories,
 }: CategoriesWidgetProps) {
-  console.log(`categories\n${JSON.stringify(categories)}`);
   const categoriesList = categories?.items || [];
   
   if (!categoriesList || categoriesList.length === 0) {
