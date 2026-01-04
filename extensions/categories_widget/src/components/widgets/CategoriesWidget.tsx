@@ -13,18 +13,15 @@ interface Category {
 }
 
 interface CategoriesWidgetProps {
-  categories?: Category[] | { items: Category[] };
+  categories?: { items: Category[] };
   categoriesWidget?: {};
 }
 
 export default function CategoriesWidget({
   categories,
 }: CategoriesWidgetProps) {
-  
-  // categories может быть объектом с items или массивом
-  const categoriesList = Array.isArray(categories) 
-    ? categories 
-    : (categories?.items || []);
+  console.log(`categories\n${JSON.stringify(categories)}`);
+  const categoriesList = categories?.items || [];
   
   if (!categoriesList || categoriesList.length === 0) {
     return null;
