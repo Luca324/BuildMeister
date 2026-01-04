@@ -7,7 +7,7 @@ import React from 'react';
 // @ts-ignore - Function signature may differ in runtime
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
 
-interface OrderHistoryProps {
+interface OrderHistoryWithStatusesProps {
   customer?: {
     orders?: Array<{
       orderId: string;
@@ -45,7 +45,7 @@ interface OrderHistoryProps {
   };
 }
 
-export default function OrderHistory({ customer }: OrderHistoryProps) {
+export default function OrderHistoryWithStatuses({ customer }: OrderHistoryWithStatusesProps) {
   const orders = customer?.orders || [];
 
   if (orders.length === 0) {
@@ -68,7 +68,7 @@ export default function OrderHistory({ customer }: OrderHistoryProps) {
   );
 }
 
-OrderHistory.propTypes = {
+OrderHistoryWithStatuses.propTypes = {
   customer: PropTypes.shape({
     orders: PropTypes.arrayOf(
       PropTypes.shape({
@@ -112,7 +112,8 @@ OrderHistory.propTypes = {
 
 export const layout = {
   areaId: 'accountPageOrderHistory',
-  sortOrder: 10, // Same as default OrderHistory - this component overrides it
+  sortOrder: 5, // Before the default OrderHistory (which has sortOrder 10)
+  // This component replaces the default OrderHistory
 };
 
 export const query = `
@@ -154,5 +155,4 @@ export const query = `
     }
   }
 `;
-
 
