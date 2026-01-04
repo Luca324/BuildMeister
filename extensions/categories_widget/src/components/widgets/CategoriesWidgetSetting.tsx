@@ -61,14 +61,14 @@ function SelectedCategory({ categoryId, onRemove }: { categoryId: number; onRemo
 export default function CategoriesWidgetSetting({
   categoriesWidget: { categories = [] },
 }: {
-  categoriesWidget: { categories?: string[] | string };
+  categoriesWidget: { categories?: string[] };
 }) {
+  console.log(`categories\n${JSON.stringify(categories)}`);
+  
   // Обрабатываем формат настроек (массив строк → массив чисел)
   // Используем useMemo для вычисления категорий из props
   const initialCategories = React.useMemo(() => {
-    return Array.isArray(categories) 
-      ? categories.map((c: string | number) => typeof c === 'string' ? parseInt(c, 10) : c).filter((id: number) => !isNaN(id))
-      : (typeof categories === 'string' ? categories.split(',').map((c: string) => parseInt(c.trim(), 10)).filter((id: number) => !isNaN(id)) : []);
+    return categories.map((c: string) => parseInt(c, 10)).filter((id: number) => !isNaN(id))
   }, [categories]);
 
   const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>(initialCategories);
@@ -168,12 +168,21 @@ CategoriesWidgetSetting.defaultProps = {
   },
 };
 
+
+export const query = `
+  query Query($settings: JSON) {
+    categoriesWidget(settings: $settings) {
+      categories
+    }
+  }
+`;
+
 /**
- * GraphQL запрос не требуется
+ * GraphQL переменные
  * 
- * Настройки виджета приходят через props (categoriesWidget), которые заполняются
- * автоматически системой Evershop из БД. Дополнительный GraphQL запрос не нужен.
- * 
- * Формат настроек из БД: { categories: ["16", "17"] } (массив строк)
- * Компонент обрабатывает этот формат в функции initialCategories (строка 68-72).
+ * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
+ * В компоненте настроек это текущие сохраненные настройки виджета
  */
+export const variables = `{
+  settings: getWidgetSetting()
+}`;
