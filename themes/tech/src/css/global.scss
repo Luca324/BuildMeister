@@ -6,7 +6,6 @@ html body {
 
 * {
   hyphens: auto;
-  color: red;
 }
 
 .product-thumbnail-listing {
@@ -103,22 +102,21 @@ button[disabled]:hover {
 }
 
 /* фикс меню прозрачного на котоырй мисклик */
+/* Существующие стили для открытия меню */
 a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0:hover + ul,
-
 a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0:hover ~ ul {
-
   height: max-content; 
-
 }
 
 /* Для следующего ul элемента (next element) */
-
 a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0 + ul,
-
 a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0 ~ ul {
-
   height: 0;
-
   overflow: hidden;
+}
 
+/* НОВЫЙ СТИЛЬ: чтобы подменю оставалось открытым при наведении на него */
+a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0 + ul:hover,
+a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px-0.md\:py-0 ~ ul:hover {
+  height: max-content !important;
 }
