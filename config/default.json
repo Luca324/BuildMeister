@@ -270,6 +270,20 @@
           "isCancelable": false
         }
       }
+    },
+    "carriers": {
+      "postnord": {
+        "name": "Postnord",
+        "trackingUrl": "https://my.postnord.no/tracking/{trackingNumber}"
+      },
+      "helthjem": {
+        "name": "Helthjem",
+        "trackingUrl": "https://www.helthjem.no/sporing/{trackingNumber}"
+      },
+      "bring": {
+        "name": "Bring",
+        "trackingUrl": "https://sporing.bring.no/sporing/{trackingNumber}"
+      }
     }
   }
 }
