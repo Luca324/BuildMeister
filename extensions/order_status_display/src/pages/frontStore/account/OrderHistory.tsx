@@ -21,6 +21,10 @@ interface OrderHistoryProps {
         badge: string;
         progress?: string;
       };
+      shipment?: {
+        carrier?: string;
+        trackingNumber?: string;
+      };
       paymentStatus?: {
         name: string;
         code: string;
@@ -43,10 +47,25 @@ interface OrderHistoryProps {
       }>;
     }>;
   };
+  carriers?: Array<{
+    name: string;
+    code: string;
+    trackingUrl?: string;
+  }>;
 }
 
-export default function OrderHistory({ customer }: OrderHistoryProps) {
+export default function OrderHistory({ customer, carriers }: OrderHistoryProps) {
   const orders = customer?.orders || [];
+
+  console.log('[OrderHistory] Debug:', {
+    ordersCount: orders.length,
+    carriers,
+    carriersCount: carriers?.length || 0,
+    firstOrder: orders[0] ? {
+      orderId: orders[0].orderId,
+      shipment: orders[0].shipment,
+    } : null,
+  });
 
   if (orders.length === 0) {
     return (
@@ -61,7 +80,7 @@ export default function OrderHistory({ customer }: OrderHistoryProps) {
     <div className="order-history order-history-with-statuses divide-y">
       {orders.map((order) => (
         <div className="order-history-order border-divider py-8" key={order.orderId}>
-          <OrderWithStatuses order={order} />
+          <OrderWithStatuses order={order} carriers={carriers || []} />
         </div>
       ))}
     </div>
@@ -82,6 +101,10 @@ OrderHistory.propTypes = {
           code: PropTypes.string.isRequired,
           badge: PropTypes.string.isRequired,
           progress: PropTypes.string,
+        }),
+        shipment: PropTypes.shape({
+          carrier: PropTypes.string,
+          trackingNumber: PropTypes.string,
         }),
         paymentStatus: PropTypes.shape({
           name: PropTypes.string.isRequired,
@@ -108,6 +131,13 @@ OrderHistory.propTypes = {
       })
     ),
   }),
+  carriers: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+      trackingUrl: PropTypes.string,
+    })
+  ),
 };
 
 export const layout = {
@@ -130,6 +160,10 @@ export const query = `
           badge
           progress
         }
+        shipment {
+          carrier
+          trackingNumber
+        }
         paymentStatus {
           name
           code
@@ -151,6 +185,11 @@ export const query = `
           qty
         }
       }
+    }
+    carriers {
+      name
+      code
+      trackingUrl
     }
   }
 `;

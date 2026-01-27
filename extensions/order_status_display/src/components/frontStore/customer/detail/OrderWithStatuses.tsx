@@ -2,6 +2,8 @@
 import ProductNoThumbnail from '@components/common/ProductNoThumbnail';
 // @ts-ignore - EverShop resolves these modules at runtime
 import Badge from '@components/common/Badge';
+// @ts-ignore - EverShop resolves these modules at runtime
+import Button from '@components/common/form/Button';
 import PropTypes from 'prop-types';
 import React from 'react';
 // @ts-ignore - EverShop resolves these modules at runtime
@@ -33,6 +35,10 @@ interface OrderWithStatusesProps {
       badge: string;
       progress?: string;
     };
+    shipment?: {
+      carrier?: string;
+      trackingNumber?: string;
+    };
     paymentStatus?: {
       name: string;
       code: string;
@@ -40,11 +46,37 @@ interface OrderWithStatusesProps {
       progress?: string;
     };
   };
+  carriers?: Array<{
+    name: string;
+    code: string;
+    trackingUrl?: string;
+  }>;
 }
 
-export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
-  const { shipmentStatus, paymentStatus } = order;
+export default function OrderWithStatuses({ order, carriers = [] }: OrderWithStatusesProps) {
+  const { shipmentStatus, shipment, paymentStatus } = order;
 
+
+  let trackingButton = null;
+  if (shipment && shipment.trackingNumber && shipment.carrier) {
+
+    const carrier = carriers.find((c) => c.code === shipment.carrier);
+
+    if (carrier && carrier.trackingUrl) {
+      // Replace {trackingNumber} with the actual tracking number
+      const url = carrier.trackingUrl.replace(/\{\s*trackingNumber\s*\}/g, shipment.trackingNumber);
+
+      trackingButton = (
+        <Button
+          title="Track shipment"
+          variant="primary"
+          onAction={() => {
+            window.open(url, '_blank')?.focus();
+          }}
+        />
+      );
+    }
+  }
   // Map status codes to progress values
   const getProgress = (statusCode: string, statusType: 'shipment' | 'payment'): string => {
     if (statusType === 'shipment') {
@@ -100,7 +132,7 @@ export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
         </div>
 
         {/* Right column - Order info and statuses */}
-        <div className="order-total col-span-1 flex flex-col justify-between gap-3">
+        <div className="text-xl order-total col-span-1 flex flex-col justify-between gap-3">
           <div className="order-header">
             <div className="order-number">
               <span className="font-bold">
@@ -113,25 +145,35 @@ export default function OrderWithStatuses({ order }: OrderWithStatusesProps) {
               {_('Total')}:{order.grandTotal.text}
             </div>
           </div>
-
+          {/* Shipment tracking on external site */}
+          {shipment && (shipment.carrier || shipment.trackingNumber) && (
+            <div className="shipment-info mt-2">
+              {trackingButton && (
+                <div className="tracking-button mt-2">
+                  {trackingButton}
+                </div>
+              )}
+            </div>
+          )}
           {/* Statuses at the bottom */}
           {(shipmentStatus || paymentStatus) && (
             <div className="order-statuses flex gap-12 mt-4">
               {shipmentStatus && (
                 <div className="shipment-status flex flex-col">
                   {/* @ts-ignore - Function signature differs in runtime */}
-                  <span className="text-sm font-semibold mb-2 text-center">{_('Shipment')}:</span>
+                  <span className="font-semibold mb-2 text-center">{_('Shipment')}:</span>
                   <Badge
                     title={shipmentStatusName}
                     variant={shipmentStatus.badge}
                     progress={shipmentStatus.progress || getProgress(shipmentStatus.code, 'shipment')}
                   />
+
                 </div>
               )}
               {paymentStatus && (
                 <div className="payment-status flex flex-col">
                   {/* @ts-ignore - Function signature differs in runtime */}
-                  <span className="text-sm font-semibold mb-2 text-center">{_('Payment')}:</span>
+                  <span className="font-semibold mb-2 text-center">{_('Payment')}:</span>
                   <Badge
                     title={paymentStatusName}
                     variant={paymentStatus.badge}
@@ -156,6 +198,10 @@ OrderWithStatuses.propTypes = {
       badge: PropTypes.string.isRequired,
       progress: PropTypes.string,
     }),
+    shipment: PropTypes.shape({
+      carrier: PropTypes.string,
+      trackingNumber: PropTypes.string,
+    }),
     paymentStatus: PropTypes.shape({
       name: PropTypes.string.isRequired,
       code: PropTypes.string.isRequired,
@@ -163,5 +209,12 @@ OrderWithStatuses.propTypes = {
       progress: PropTypes.string,
     }),
   }).isRequired,
+  carriers: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
+      trackingUrl: PropTypes.string,
+    })
+  ),
 };
 
