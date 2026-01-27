@@ -169,5 +169,107 @@
       },
       "additionalProperties": true
     }
+  },
+  "oms": {
+    "order": {
+      "status": {
+        "new": { 
+          "name": "Ny",
+          "badge": "default", 
+          "progress": "incomplete", 
+          "isDefault": true,
+          "next": [ 
+            "processing",
+            "canceled"
+          ]
+        },
+        "processing": {
+          "name": "Behandles",
+          "badge": "default",
+          "progress": "incomplete",
+          "next": [
+            "completed",
+            "canceled"
+          ]
+        },
+        "completed": {
+          "name": "Fullført",
+          "badge": "success",
+          "progress": "complete",
+          "next": [
+            "closed"
+          ]
+        },
+        "canceled": {
+          "name": "Avbrutt",
+          "badge": "critical",
+          "progress": "complete",
+          "next": []
+        },
+        "closed": {
+          "name": "Lukket",
+          "badge": "default",
+          "progress": "complete",
+          "next": []
+        }
+      },
+      "shipmentStatus": {
+        "pending": {
+          "name": "Ventende",
+          "badge": "default",
+          "progress": "incomplete",
+          "isDefault": true 
+        },
+        "processing": {
+          "name": "Behandles",
+          "badge": "default",
+          "progress": "incomplete",
+          "isDefault": false
+        },
+        "shipped": {
+          "name": "Sendt",
+          "badge": "attention",
+          "progress": "complete"
+        },
+        "delivered": {
+          "name": "Levert",
+          "badge": "success",
+          "progress": "complete",
+          "isCancelable": false
+        },
+        "canceled": {
+          "name": "Avbrutt",
+          "badge": "critical",
+          "progress": "complete",
+          "isCancelable": false
+        }
+      },
+      "paymentStatus": {
+        "pending": {
+          "name": "Ventende",
+          "badge": "default",
+          "progress": "incomplete",
+          "isDefault": true 
+        },
+        "processing": {
+          "name": "Behandles",
+          "badge": "default",
+          "progress": "incomplete",
+          "isCancelable": false,
+          "isDefault": false
+        },
+        "paid": {
+          "name": "Betalt",
+          "badge": "success",
+          "progress": "complete"
+        },
+        "canceled": {
+          "name": "Avbrutt",
+          "badge": "critical",
+          "progress": "complete",
+          "isCancelable": false
+        }
+      }
+    }
   }
 }
