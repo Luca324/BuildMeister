@@ -1,4 +1,20 @@
 services:
+  # Nginx reverse proxy для SSL
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./secrets:/etc/nginx/ssl:ro  # SSL сертификаты из папки secrets
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - myevershop
+
   app:
     build: 
       context: .  # путь к папке с Dockerfile
@@ -15,12 +31,14 @@ services:
       - myevershop
     depends_on:
       - database
-    ports:
-      - "80:80"
+    # Убираем проброс порта наружу - теперь доступ только через nginx
+    expose:
+      - "80"
     volumes:
       - ./data-export:/app/data-export:rw # чтобы изменения в этой папке отображались в контейнере без пересборки
       - ./config:/app/config:rw 
       - ./scripts:/app/scripts:rw 
+      - ./backups:/app/backups:ro # Монтируем папку с дампами для автоматического восстановления
       # - ./extensions:/app/extensions:rw 
       # - ./extensions:/app/scripts/migrate.sh:rw 
   
@@ -46,3 +64,4 @@ networks:
 
 volumes:
   postgres-data:
+  nginx_logs:
