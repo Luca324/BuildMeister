@@ -22,12 +22,12 @@ services:
     restart: always
     command: ["/bin/sh", "./scripts/entrypoint.sh"]
     environment:
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_PASSWORD: postgres
-      DB_USER: postgres
-      DB_NAME: postgres
-      PORT: 80
+      DB_HOST: ${DB_HOST:?ERROR DB_HOST не определена в .env файле}
+      DB_PORT: ${DB_PORT:?ERROR DB_PORT не определена в .env файле}
+      DB_PASSWORD: ${DB_PASSWORD:?ERROR DB_PASSWORD не определена в .env файле}
+      DB_USER: ${DB_USER:?ERROR DB_USER не определена в .env файле}
+      DB_NAME: ${DB_NAME:?ERROR DB_NAME не определена в .env файле}
+      PORT: ${PORT:?ERROR PORT не определена в .env файле}
     networks:
       - myevershop
     depends_on:
@@ -50,13 +50,13 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - "5434:5432"
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?ERROR DB_PASSWORD не определена в .env файле}
+      POSTGRES_USER: ${DB_USER:?ERROR DB_USER не определена в .env файле}
+      POSTGRES_DB: ${DB_NAME:?ERROR DB_NAME не определена в .env файле}
     networks:
       - myevershop
+    # ВАЖНО: Порт НЕ пробрасывается наружу для безопасности!
+    # База доступна только внутри Docker сети
 
 networks:
   myevershop:

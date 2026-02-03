@@ -7,16 +7,35 @@ PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
 # Загружаем переменные окружения
 ENV_FILE="${PROJECT_ROOT}/.env"
-if [ -f "${ENV_FILE}" ]; then
-    export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
+if [ ! -f "${ENV_FILE}" ]; then
+    echo "❌ ОШИБКА: Файл .env не найден в ${PROJECT_ROOT}"
+    echo "Создайте файл .env на основе .env.example"
+    exit 1
 fi
 
-# Параметры подключения
-DB_HOST=${DB_HOST:-localhost}
-DB_PORT=${DB_PORT:-5432}
-DB_NAME=${DB_NAME:-postgres}
-DB_USER=${DB_USER:-postgres}
-DB_PASSWORD=${DB_PASSWORD:-postgres}
+export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
+
+# Проверяем наличие обязательных переменных
+if [ -z "${DB_HOST}" ]; then
+    echo "❌ ОШИБКА: DB_HOST не определена в .env файле"
+    exit 1
+fi
+if [ -z "${DB_PORT}" ]; then
+    echo "❌ ОШИБКА: DB_PORT не определена в .env файле"
+    exit 1
+fi
+if [ -z "${DB_NAME}" ]; then
+    echo "❌ ОШИБКА: DB_NAME не определена в .env файле"
+    exit 1
+fi
+if [ -z "${DB_USER}" ]; then
+    echo "❌ ОШИБКА: DB_USER не определена в .env файле"
+    exit 1
+fi
+if [ -z "${DB_PASSWORD}" ]; then
+    echo "❌ ОШИБКА: DB_PASSWORD не определена в .env файле"
+    exit 1
+fi
 
 # Путь для сохранения дампа (относительно корня проекта)
 BACKUP_DIR="${1:-${PROJECT_ROOT}/backups}"
