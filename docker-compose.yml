@@ -20,6 +20,7 @@ services:
       context: .  # путь к папке с Dockerfile
       dockerfile: Dockerfile
     restart: always
+    command: ["/bin/sh", "./scripts/entrypoint.sh"]
     environment:
       DB_HOST: database
       DB_PORT: 5432

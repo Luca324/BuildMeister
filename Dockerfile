@@ -25,5 +25,4 @@ RUN chmod +x ./scripts/entrypoint.sh
 ENV PORT=80
 EXPOSE 80
 
-# Используем новый entrypoint скрипт
-CMD ["./scripts/entrypoint.sh"]
+CMD ["/bin/sh", "./scripts/entrypoint.sh"]
