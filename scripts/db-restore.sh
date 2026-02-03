@@ -3,15 +3,7 @@ set -e
 
 # Определяем корневую директорию проекта
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
-
-# Загружаем переменные окружения
-ENV_FILE="${PROJECT_ROOT}/.env"
-if [ ! -f "${ENV_FILE}" ]; then
-    echo "❌ ОШИБКА: Файл .env не найден в ${PROJECT_ROOT}"
-    echo "Создайте файл .env на основе .env.example"
-    exit 1
-fi
+PROJECT_ROOT="$( cd "${SCRIPT_ROOT}/.." && pwd )"
 
 export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
 
@@ -63,4 +55,3 @@ PGPASSWORD="${DB_PASSWORD}" pg_restore \
     "${BACKUP_FILE}"
 
 echo "✅ БД восстановлена из: ${BACKUP_FILE}"
-
