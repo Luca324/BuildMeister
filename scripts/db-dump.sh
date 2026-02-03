@@ -1,17 +1,10 @@
-#!/bin/bash
+#!/bin/sh
+
 set -e
 
 # Определяем корневую директорию проекта
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
-
-# Загружаем переменные окружения
-ENV_FILE="${PROJECT_ROOT}/.env"
-if [ ! -f "${ENV_FILE}" ]; then
-    echo "❌ ОШИБКА: Файл .env не найден в ${PROJECT_ROOT}"
-    echo "Создайте файл .env на основе .env.example"
-    exit 1
-fi
 
 export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
 
