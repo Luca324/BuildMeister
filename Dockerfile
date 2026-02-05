@@ -10,7 +10,6 @@ COPY themes ./themes
 COPY extensions ./extensions
 COPY config ./config
 COPY scripts ./scripts
-COPY backups ./backups
 RUN npm install
 RUN cd themes/tech && npm run tsc
 RUN cd extensions/categories_widget && npm run tsc
