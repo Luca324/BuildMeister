@@ -10,12 +10,12 @@ COPY themes ./themes
 COPY extensions ./extensions
 COPY config ./config
 COPY scripts ./scripts
+COPY evershop ./evershop
 COPY nginx/html/maintenance.html ./nginx/html/maintenance.html
 RUN npm install
 RUN cd themes/tech && npm run tsc
 RUN cd extensions/categories_widget && npm run tsc
 RUN cd extensions/order_status_display && npm run tsc
-RUN npm run build
 
 # Устанавливаем права на выполнение для скриптов
 RUN chmod +x ./scripts/db-dump.sh
