@@ -11,6 +11,7 @@ COPY extensions ./extensions
 COPY config ./config
 COPY scripts ./scripts
 COPY evershop ./evershop
+COPY backups ./backups
 COPY nginx/html/maintenance.html ./nginx/html/maintenance.html
 
 RUN npm install
