@@ -40,9 +40,7 @@ services:
       - ./data-export:/app/data-export:rw # чтобы изменения в этой папке отображались в контейнере без пересборки
       - ./config:/app/config:rw 
       - ./scripts:/app/scripts:rw 
-      - ./backups:/app/backups:ro # Монтируем папку с дампами для автоматического восстановления
-      # - ./extensions:/app/extensions:rw 
-      # - ./extensions:/app/scripts/migrate.sh:rw 
+      - ./backups:/app/backups:rw # Монтируем папку с дампами для автоматического восстановления
   
   #The postgres database: 
   database:
