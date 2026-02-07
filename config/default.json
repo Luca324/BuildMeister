@@ -69,6 +69,12 @@
         "resolve": "node_modules/@evershop/s3_file_storage",
         "enabled": true,
         "priority": 10
+      },
+      {
+        "name": "google_login",
+        "resolve": "node_modules/@evershop/google_login",
+        "enabled": true,
+        "priority": 10
       }
     ]
   },

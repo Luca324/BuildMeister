@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@evershop/evershop": "2.0.1",
+    "@evershop/google_login": "^2.1.1",
     "@evershop/s3_file_storage": "^2.0.0",
     "@luca324/yandex-evershop-s3": "^2.0.0"
   },
