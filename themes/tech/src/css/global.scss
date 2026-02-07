@@ -121,7 +121,7 @@ a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px
   height: max-content !important;
 }
 
-.normallist li {
-  list-style: square;
-  list-style-position: inside;
+.normallist {
+  list-style-type: square; 
+  padding-left: 20px;  
 }
