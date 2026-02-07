@@ -56,27 +56,51 @@ interface OrderWithStatusesProps {
 export default function OrderWithStatuses({ order, carriers = [] }: OrderWithStatusesProps) {
   const { shipmentStatus, shipment, paymentStatus } = order;
 
+  // Track shipment button logic (exactly like TrackingButton.js)
+  console.log('[OrderWithStatuses] Debug tracking button:', {
+    shipment,
+    carriers,
+    hasShipment: !!shipment,
+    hasTrackingNumber: !!(shipment?.trackingNumber),
+    hasCarrier: !!(shipment?.carrier),
+  });
 
   let trackingButton = null;
   if (shipment && shipment.trackingNumber && shipment.carrier) {
+    console.log('[OrderWithStatuses] Shipment data found, looking for carrier:', {
+      carrierCode: shipment.carrier,
+      carriersCount: carriers.length,
+      carriers: carriers,
+    });
 
     const carrier = carriers.find((c) => c.code === shipment.carrier);
+    console.log('[OrderWithStatuses] Found carrier:', {
+      carrier,
+      hasTrackingUrl: !!(carrier?.trackingUrl),
+    });
 
     if (carrier && carrier.trackingUrl) {
       // Replace {trackingNumber} with the actual tracking number
       const url = carrier.trackingUrl.replace(/\{\s*trackingNumber\s*\}/g, shipment.trackingNumber);
-
+      console.log('[OrderWithStatuses] Creating tracking button with URL:', url);
       trackingButton = (
         <Button
           title="Spor forsendelsen"
           variant="primary"
           onAction={() => {
+            console.log('[OrderWithStatuses] Tracking button clicked, opening URL:', url);
             window.open(url, '_blank')?.focus();
           }}
         />
       );
+    } else {
+      console.log('[OrderWithStatuses] Carrier not found or no trackingUrl');
     }
+  } else {
+    console.log('[OrderWithStatuses] Missing shipment data for tracking button');
   }
+
+  console.log('[OrderWithStatuses] Final trackingButton:', trackingButton);
   // Map status codes to progress values
   const getProgress = (statusCode: string, statusType: 'shipment' | 'payment'): string => {
     if (statusType === 'shipment') {
