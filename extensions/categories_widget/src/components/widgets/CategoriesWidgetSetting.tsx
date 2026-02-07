@@ -1,0 +1,186 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+// @ts-ignore - EverShop resolves @components at runtime
+import CategorySelector from '@components/admin/promotion/couponEdit/CategorySelector';
+// @ts-ignore - EverShop resolves @components at runtime
+import { useModal } from '@components/common/modal/useModal';
+// @ts-ignore - EverShop resolves @components at runtime
+import { useQuery } from 'urql';
+
+const CategoryQuery = `
+  query Query ($id: Int!) {
+    category(id: $id) {
+      name
+      path {
+        name
+      }
+    }
+  }
+`;
+
+function SelectedCategory({ categoryId, onRemove }: { categoryId: number; onRemove: () => void }) {
+  const [result] = useQuery({
+    query: CategoryQuery,
+    variables: {
+      id: categoryId
+    }
+  });
+  const { data, fetching, error } = result;
+  
+  if (error) {
+    return <p className="text-critical">Error loading category</p>;
+  }
+  if (fetching) {
+    return <span>Loading...</span>;
+  }
+  
+  return (
+    <div className="border rounded border-[#c9cccf] mb-4 p-4 flex justify-between items-center">
+      <div>
+        {data?.category?.path?.map((item: { name: string }, index: number) => (
+          <span key={item.name} className="text-gray-500">
+            {item.name}
+            {index < (data.category.path.length - 1) && ' > '}
+          </span>
+        ))}
+      </div>
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          onRemove();
+        }}
+        className="text-critical ml-8"
+      >
+        Remove
+      </a>
+    </div>
+  );
+}
+
+export default function CategoriesWidgetSetting({
+  categoriesWidget: { categories = [] },
+}: {
+  categoriesWidget: { categories?: string[] };
+}) {
+  // Обрабатываем формат настроек (массив строк → массив чисел)
+  // Используем useMemo для вычисления категорий из props
+  const initialCategories = React.useMemo(() => {
+    return categories.map((c: string) => parseInt(c, 10)).filter((id: number) => !isNaN(id))
+  }, [categories]);
+
+  const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>(initialCategories);
+  
+  // Обновляем состояние при изменении props (когда данные загрузятся из GraphQL)
+  // Обновляем только если категории действительно изменились
+  React.useEffect(() => {
+    const currentIds = [...selectedCategoryIds].sort().join(',');
+    const newIds = [...initialCategories].sort().join(',');
+    if (currentIds !== newIds) {
+      setSelectedCategoryIds(initialCategories);
+    }
+  }, [initialCategories]);
+  const modal = useModal();
+
+  const closeModal = () => {
+    modal.closeModal();
+  };
+
+  const onSelect = (categoryId: number) => {
+    if (!selectedCategoryIds.includes(categoryId)) {
+      setSelectedCategoryIds(prev => [...prev, categoryId]);
+    }
+    // Не закрываем модальное окно, чтобы пользователь мог выбрать несколько категорий
+  };
+
+  const onUnSelect = (categoryId: number) => {
+    setSelectedCategoryIds(prev => prev.filter(id => id !== categoryId));
+  };
+
+  const onRemove = (categoryId: number) => {
+    setSelectedCategoryIds(prev => prev.filter(id => id !== categoryId));
+  };
+
+  return (
+    <div>
+      <div className="mb-4">Velg kategorier som skal vises</div>
+      {selectedCategoryIds.length > 0 && (
+        <div className="mb-4">
+          {selectedCategoryIds.map((categoryId) => (
+            <SelectedCategory
+              key={categoryId}
+              categoryId={categoryId}
+              onRemove={() => onRemove(categoryId)}
+            />
+          ))}
+        </div>
+      )}
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          modal.openModal();
+        }}
+        className="text-interactive"
+      >
+        Select category
+      </a>
+      {modal.state.showing && (
+        <div className={modal.className} onAnimationEnd={modal.onAnimationEnd}>
+          <div className="modal-wrapper flex self-center justify-center items-center" tabIndex={-1} role="dialog">
+            <div className="modal">
+              <CategorySelector
+                onSelect={onSelect}
+                onUnSelect={onUnSelect}
+                selectedIDs={selectedCategoryIds}
+                closeModal={closeModal}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedCategoryIds.map((categoryId, index) => (
+        <input
+          key={categoryId}
+          type="hidden"
+          name={`settings[categories][${index}]`}
+          value={categoryId}
+        />
+      ))}
+    </div>
+  );
+}
+
+CategoriesWidgetSetting.propTypes = {
+  categoriesWidget: PropTypes.shape({
+    categories: PropTypes.oneOfType([
+      PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+      PropTypes.string,
+    ]),
+  }),
+};
+
+CategoriesWidgetSetting.defaultProps = {
+  categoriesWidget: {
+    categories: [],
+  },
+};
+
+
+export const query = `
+  query Query($settings: JSON) {
+    categoriesWidget(settings: $settings) {
+      categories
+    }
+  }
+`;
+
+/**
+ * GraphQL переменные
+ * 
+ * getWidgetSetting() - получает настройки виджета из БД (таблица WIDGET.settings)
+ * В компоненте настроек это текущие сохраненные настройки виджета
+ */
+export const variables = `{
+  settings: getWidgetSetting()
+}`;
