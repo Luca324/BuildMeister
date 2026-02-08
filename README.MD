@@ -1,5 +1,6 @@
 # подготовка
 - .env
+- положить бэкап в backups/
 - положить данные ssl сертификата в secrets:
     - secrets/key.pem
     - secrets/cert.pem
@@ -23,16 +24,18 @@ chmod 600 secrets/key.pem
 приложение необходимо собирать до docker, т.к. докер сборку не выполняет, а лишь копирует папку .evershop/dist в контейнер в целях экономии времени. если вам нужно, чтобы проект собирался в докере, то необходимо изменить Dockerfile и закомментировать строку копирования папки .evershop/dist в контейнер, а также добавить строку npm run build.
 - docker compose down -v (остановка и удаление контейнеров)
 - docker compose build --no-cache (сборка контейнеров)
-- в другом терминале применить миграции:
+
+
+если нужно попасть в контейнер app:
     - docker compose exec -it app sh
+    там можно запустить restore БД:
     - npm run db:import backups/backup_name.dump 
     ИЛИ
     - docker compose exec app npm run db:import backups/backup_name.dump
-готово!
+
 
 для того чтобы создать дамп базы данных:
 - docker compose exec app npm run db:export
-- docker cp buildmeister-app-1:/backups/backup_20260207_103849.dump ./backups
 
 ИЛИ использовать команду с автоматическим определением последнего файла:
 - docker cp buildmeister-app-1:/backups/$(docker compose exec -T app sh -c 'ls -t /app/backups/backup_*.dump | head -1 | xargs basename') ./backups/
