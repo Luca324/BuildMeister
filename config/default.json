@@ -5,7 +5,7 @@
     "language": "nb",
     "weightUnit": "kg",
     "country": "NO",
-    "homeUrl": "http://buildmeister.no:3000"
+    "homeUrl": "http://buildmeister.no"
   },
   "catalog": {
     "product": {
@@ -67,6 +67,12 @@
       {
         "name": "s3_file_storage",
         "resolve": "node_modules/@evershop/s3_file_storage",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "name": "google_login",
+        "resolve": "node_modules/@evershop/google_login",
         "enabled": true,
         "priority": 10
       }

@@ -2,8 +2,12 @@
 /.evershop
 **/dist/
 .env
-/frontStore
 /evershop
-/s3_file_storage
 themes/sample
 AREA_SYSTEM_GUIDE.
+.specstory/
+backups/
+nginx/ssl/cert.pem
+nginx/ssl/cert.pem.backup
+nginx/ssl/key.pem
+secrets/
