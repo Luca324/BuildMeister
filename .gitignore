@@ -4,6 +4,10 @@
 .env
 /evershop
 themes/sample
-secrets/
+AREA_SYSTEM_GUIDE.
+.specstory/
 backups/
-.specstory
+nginx/ssl/cert.pem
+nginx/ssl/cert.pem.backup
+nginx/ssl/key.pem
+secrets/
