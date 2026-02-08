@@ -68,7 +68,7 @@ export default function OrderWithStatuses({ order, carriers = [] }: OrderWithSta
 
       trackingButton = (
         <Button
-          title="Spor forsendelsen"
+          title="Track shipment"
           variant="primary"
           onAction={() => {
             window.open(url, '_blank')?.focus();
