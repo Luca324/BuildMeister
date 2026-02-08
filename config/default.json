@@ -59,6 +59,12 @@
         "priority": 20
       },
       {
+        "name": "order_status_display",
+        "resolve": "extensions/order_status_display",
+        "enabled": true,
+        "priority": 15
+      },
+      {
         "name": "s3_file_storage",
         "resolve": "node_modules/@evershop/s3_file_storage",
         "enabled": true,
