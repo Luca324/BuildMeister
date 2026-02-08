@@ -1,0 +1,16 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: always
+    network_mode: host
+    # При использовании network_mode: host порты не пробрасываются
+    # nginx напрямую слушает на портах 80 и 443 хоста
+    volumes:
+      # Монтируем SSL сертификаты (на случай если нужно обновлять без пересборки)
+      - ./nginx/ssl/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      - ./nginx/ssl/key.pem:/etc/nginx/ssl/key.pem:ro
+      # Монтируем конфигурацию (для удобства редактирования)
+      - ./nginx/ssl/nginx.conf:/etc/nginx/nginx.conf:ro
+
