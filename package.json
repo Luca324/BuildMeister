@@ -10,7 +10,7 @@
     "prebuild": "node scripts/compile-extensions.js",
     "build": "evershop build",
     "compile:extensions": "node scripts/compile-extensions.js",
-    "start": "cross-env PORT=3000 evershop start",
+    "start": "cross-env PORT=80 evershop start",
     "start:debug": "evershop start --debug",
     "dev": "cross-env PORT=3000 evershop dev",
     "user:create": "evershop user:create",
