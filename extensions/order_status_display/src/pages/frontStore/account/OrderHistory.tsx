@@ -57,16 +57,6 @@ interface OrderHistoryProps {
 export default function OrderHistory({ customer, carriers }: OrderHistoryProps) {
   const orders = customer?.orders || [];
 
-  console.log('[OrderHistory] Debug:', {
-    ordersCount: orders.length,
-    carriers,
-    carriersCount: carriers?.length || 0,
-    firstOrder: orders[0] ? {
-      orderId: orders[0].orderId,
-      shipment: orders[0].shipment,
-    } : null,
-  });
-
   if (orders.length === 0) {
     return (
       <div className="order-history-empty">
@@ -142,7 +132,7 @@ OrderHistory.propTypes = {
 
 export const layout = {
   areaId: 'accountPageOrderHistory',
-  sortOrder: 10, // Same as default OrderHistory - this component overrides it
+  sortOrder: 10
 };
 
 export const query = `

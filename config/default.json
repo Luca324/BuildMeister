@@ -5,7 +5,7 @@
     "language": "nb",
     "weightUnit": "kg",
     "country": "NO",
-    "homeUrl": "http://buildmeister.no"
+    "homeUrl": "https://buildmeister.no"
   },
   "catalog": {
     "product": {
@@ -74,7 +74,7 @@
         "name": "google_login",
         "resolve": "node_modules/@evershop/google_login",
         "enabled": true,
-        "priority": 10
+        "priority": 13
       }
     ]
   },
