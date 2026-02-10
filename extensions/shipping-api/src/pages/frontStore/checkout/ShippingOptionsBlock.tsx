@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { useClient } from 'urql';
 
 interface ShippingOption {
   id: string;
@@ -43,6 +44,7 @@ interface ShippingOptionsBlockProps {
 }
 
 export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps) {
+  const client = useClient();
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<ShippingProviderOptions[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -76,10 +78,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     setError(null);
 
     try {
-      // @ts-ignore - GraphQL client resolved at runtime
-      const { graphql } = await import('@evershop/evershop/lib/graphql');
-      
-      const result = await graphql(`
+      const CALCULATE_SHIPPING_MUTATION = `
         mutation CalculateShipping($cartId: ID!) {
           calculateShipping(cartId: $cartId) {
             provider
@@ -96,12 +95,14 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
             error
           }
         }
-      `, {
+      `;
+      
+      const result = await client.mutation(CALCULATE_SHIPPING_MUTATION, {
         cartId
-      });
+      }).toPromise();
 
-      if (result.errors) {
-        throw new Error(result.errors[0]?.message || 'Failed to calculate shipping');
+      if (result.error) {
+        throw new Error(result.error.message || 'Failed to calculate shipping');
       }
 
       setProviders(result.data?.calculateShipping || []);
@@ -111,7 +112,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [client]);
 
   // Debounced версия calculateShipping
   const debouncedCalculateShipping = useMemo(
@@ -152,9 +153,6 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     setSelectedOption(option.id);
 
     try {
-      // @ts-ignore - GraphQL client resolved at runtime
-      const { graphql } = await import('@evershop/evershop/lib/graphql');
-
       const shippingMethod = {
         method_id: option.id,
         provider: option.provider,
@@ -168,7 +166,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
         }
       };
 
-      const result = await graphql(`
+      const UPDATE_CART_SHIPPING_METHOD_MUTATION = `
         mutation UpdateCartShippingMethod($cartId: ID!, $shippingMethod: JSON!) {
           updateCartShippingMethod(cartId: $cartId, shippingMethod: $shippingMethod) {
             cart {
@@ -183,13 +181,15 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
             }
           }
         }
-      `, {
+      `;
+
+      const result = await client.mutation(UPDATE_CART_SHIPPING_METHOD_MUTATION, {
         cartId: cart.cartId,
         shippingMethod: JSON.stringify(shippingMethod)
-      });
+      }).toPromise();
 
-      if (result.errors) {
-        throw new Error(result.errors[0]?.message || 'Failed to update shipping method');
+      if (result.error) {
+        throw new Error(result.error.message || 'Failed to update shipping method');
       }
 
       // Обновляем страницу для отображения новой стоимости
@@ -198,7 +198,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
       setError(err.message || 'Failed to save shipping method');
       setSelectedOption(null);
     }
-  }, [cart?.cartId]);
+  }, [cart?.cartId, client]);
 
   // Если адрес не заполнен
   if (!cart || !cart.shippingAddress || !isAddressComplete(cart.shippingAddress)) {
@@ -325,8 +325,18 @@ ShippingOptionsBlock.propTypes = {
       postcode: PropTypes.string,
       city: PropTypes.string,
       address1: PropTypes.string,
-      country: PropTypes.string,
-      province: PropTypes.string
+      country: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          code: PropTypes.string
+        })
+      ]),
+      province: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          code: PropTypes.string
+        })
+      ])
     }),
     shippingMethod: PropTypes.string
   })
