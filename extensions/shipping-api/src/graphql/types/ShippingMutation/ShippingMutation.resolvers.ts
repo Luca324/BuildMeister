@@ -13,14 +13,16 @@ export default {
     calculateShipping: async (_: any, { cartId }: { cartId: string }) => {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
-      // @ts-ignore
-      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
 
       // Загружаем корзину
       const cart = await select()
         .from('cart')
         .where('cart_id', '=', cartId)
-        .load(pool);
+        .load(connection);
 
       if (!cart) {
         throw new Error('Cart not found');
@@ -34,7 +36,7 @@ export default {
       const shippingAddress = await select()
         .from('cart_address')
         .where('cart_address_id', '=', cart.shipping_address_id)
-        .load(pool);
+        .load(connection);
 
       if (!shippingAddress) {
         throw new Error('Shipping address not found');
@@ -44,7 +46,7 @@ export default {
       const cartItems = await select()
         .from('cart_item')
         .where('cart_id', '=', cartId)
-        .execute(pool);
+        .execute(connection);
 
       if (!cartItems || cartItems.length === 0) {
         throw new Error('Cart is empty');
@@ -54,7 +56,7 @@ export default {
       const setting = await select()
         .from('setting')
         .where('name', '=', 'shipping_api')
-        .load(pool);
+        .load(connection);
 
       if (!setting) {
         throw new Error('Shipping API configuration not found');
@@ -101,7 +103,7 @@ export default {
         const product = await select()
           .from('product')
           .where('product_id', '=', item.product_id)
-          .load(pool);
+          .load(connection);
 
         if (product) {
           maxLength = Math.max(maxLength, parseFloat(product.length_cm) || 0);
@@ -135,11 +137,11 @@ export default {
     
     updateCartShippingMethod: async (_: any, { cartId, shippingMethod }: { cartId: string, shippingMethod: string }) => {
       // @ts-ignore - EverShop resolves these modules at runtime
-      const { select } = await import('@evershop/postgres-query-builder');
-      // @ts-ignore
-      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+      const { select, update } = await import('@evershop/postgres-query-builder');
       // @ts-ignore - EverShop resolves these modules at runtime
-      const { update } = await import('@evershop/postgres-query-builder');
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
 
       // Парсим shippingMethod
       let methodData: any;
@@ -155,7 +157,7 @@ export default {
       const cart = await select()
         .from('cart')
         .where('cart_id', '=', cartId)
-        .load(pool);
+        .load(connection);
 
       if (!cart) {
         throw new Error('Cart not found');
@@ -171,13 +173,13 @@ export default {
           updated_at: new Date()
         })
         .where('cart_id', '=', cartId)
-        .execute(pool);
+        .execute(connection);
 
       // Загружаем обновленную корзину
       const updatedCart = await select()
         .from('cart')
         .where('cart_id', '=', cartId)
-        .load(pool);
+        .load(connection);
 
       return {
         cart: updatedCart

@@ -8,12 +8,15 @@ export default {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
-      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
 
       const productData = await select()
         .from('product')
         .where('product_id', '=', product.productId)
-        .load(pool);
+        .load(connection);
 
       return productData?.length_cm || null;
     },
@@ -21,12 +24,15 @@ export default {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
-      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
 
       const productData = await select()
         .from('product')
         .where('product_id', '=', product.productId)
-        .load(pool);
+        .load(connection);
 
       return productData?.width_cm || null;
     },
@@ -34,12 +40,15 @@ export default {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
-      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
 
       const productData = await select()
         .from('product')
         .where('product_id', '=', product.productId)
-        .load(pool);
+        .load(connection);
 
       return productData?.height_cm || null;
     }

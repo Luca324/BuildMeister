@@ -52,14 +52,16 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     // Загружаем данные заказа
     // @ts-ignore
     const { select } = await import('@evershop/postgres-query-builder');
-    // @ts-ignore
-    const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+    // @ts-ignore - EverShop resolves these modules at runtime
+    const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+    // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+    const connection: any = pool || await getConnection();
 
     // Загружаем адрес доставки
     const shippingAddress = await select()
       .from('order_address')
       .where('order_address_id', '=', order.shipping_address_id)
-      .load(pool);
+      .load(connection);
 
     if (!shippingAddress) {
       throw new Error('Shipping address not found');
@@ -69,7 +71,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     const orderItems = await select()
       .from('order_item')
       .where('order_item_order_id', '=', order.order_id)
-      .execute(pool);
+      .execute(connection);
 
     if (!orderItems || orderItems.length === 0) {
       throw new Error('Order items not found');
@@ -79,7 +81,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     const setting = await select()
       .from('setting')
       .where('name', '=', 'shipping_api')
-      .load(pool);
+      .load(connection);
 
     if (!setting) {
       throw new Error('Shipping API configuration not found');
@@ -119,7 +121,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       const product = await select()
         .from('product')
         .where('product_id', '=', item.product_id)
-        .load(pool);
+        .load(connection);
 
       if (product) {
         maxLength = Math.max(maxLength, parseFloat(product.length_cm) || 0);
@@ -162,7 +164,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       const existingShipment = await select()
         .from('shipment')
         .where('shipment_order_id', '=', order.order_id)
-        .load(pool);
+        .load(connection);
 
       if (existingShipment) {
         // Обновляем существующее отправление
@@ -180,7 +182,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
             updated_at: new Date()
           })
           .where('shipment_order_id', '=', order.order_id)
-          .execute(pool);
+          .execute(connection);
       } else {
         // Создаем новое отправление
         // @ts-ignore - EverShop resolves these modules at runtime
@@ -200,7 +202,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
             created_at: new Date(),
             updated_at: new Date()
           })
-          .execute(pool);
+          .execute(connection);
       }
 
       // Добавляем запись в order_activity
@@ -216,7 +218,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
           created_at: new Date(),
           updated_at: new Date()
         })
-        .execute(pool);
+        .execute(connection);
 
       // Отправляем email продавцу с QR кодом
       if (result.qrCodeUrl && providerConfig.sender_email) {
@@ -296,8 +298,10 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     try {
       // @ts-ignore
       const { insert } = await import('@evershop/postgres-query-builder');
-      // @ts-ignore
-      const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+      // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+      const connection: any = pool || await getConnection();
       const { v4: uuidv4 } = await import('uuid');
 
       await insert('order_activity')
@@ -309,7 +313,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
           created_at: new Date(),
           updated_at: new Date()
         })
-        .execute(pool);
+        .execute(connection);
     } catch (activityError: any) {
       logger.error('Failed to save error to order_activity', { error: activityError.message });
     }

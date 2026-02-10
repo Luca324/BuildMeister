@@ -83,12 +83,15 @@ export class PostNordAdapter extends BaseShippingAdapter {
     // @ts-ignore - EverShop resolves these modules at runtime
     const { select } = await import('@evershop/postgres-query-builder');
     // @ts-ignore
-    const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
+    // @ts-ignore - EverShop resolves these modules at runtime
+    const { pool, getConnection } = await import('@evershop/evershop/lib/postgres');
+    // getConnection() returns PoolClient, pool is Pool - both work with load/execute
+    const connection: any = pool || await getConnection();
 
     const setting = await select()
       .from('setting')
       .where('name', '=', 'shipping_api')
-      .load(pool);
+              .load(connection);
 
     if (!setting) {
       throw new Error('Shipping API configuration not found in settings');
