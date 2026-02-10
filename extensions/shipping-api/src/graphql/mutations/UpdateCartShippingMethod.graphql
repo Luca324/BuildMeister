@@ -1,0 +1,11 @@
+extend type Mutation {
+  """
+  Обновление метода доставки в корзине
+  """
+  updateCartShippingMethod(cartId: ID!, shippingMethod: JSON!): UpdateCartShippingMethodPayload!
+}
+
+type UpdateCartShippingMethodPayload {
+  cart: Cart
+}
+

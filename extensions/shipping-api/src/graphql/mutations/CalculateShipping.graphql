@@ -1,0 +1,7 @@
+extend type Mutation {
+  """
+  Расчет стоимости доставки от всех активных провайдеров
+  """
+  calculateShipping(cartId: ID!): [ShippingProviderOptions!]!
+}
+

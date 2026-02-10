@@ -1,0 +1,24 @@
+"""
+Вариант доставки от провайдера
+"""
+type ShippingOption {
+  id: String!
+  name: String!
+  price: Float!
+  currency: String!
+  estimatedDays: Int
+  serviceCode: String
+  provider: String!
+  metadata: JSON
+}
+
+"""
+Результат расчета доставки от одного провайдера
+"""
+type ShippingProviderOptions {
+  provider: String!
+  providerName: String!
+  options: [ShippingOption!]!
+  error: String
+}
+
