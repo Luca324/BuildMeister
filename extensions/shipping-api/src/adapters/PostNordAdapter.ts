@@ -187,7 +187,7 @@ export class PostNordAdapter extends BaseShippingAdapter {
     try {
       const config = await this.getConfig();
 
-      const apiRequest = {
+      const apiRequest: any = {
         fromCountryCode: request.from.countryCode,
         fromPostalCode: request.from.postalCode,
         toCountryCode: request.to.countryCode,
@@ -264,7 +264,7 @@ export class PostNordAdapter extends BaseShippingAdapter {
     try {
       const config = await this.getConfig();
 
-      const apiRequest = {
+      const apiRequest: any = {
         deliveryOptionId: request.selectedOptionId,
         from: {
           countryCode: request.from.countryCode,

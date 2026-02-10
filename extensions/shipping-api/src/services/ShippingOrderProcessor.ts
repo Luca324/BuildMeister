@@ -166,10 +166,10 @@ export default async function shippingOrderProcessor(order: any, context: any) {
 
       if (existingShipment) {
         // Обновляем существующее отправление
-        await select()
-          .from('shipment')
-          .where('shipment_order_id', '=', order.order_id)
-          .update({
+        // @ts-ignore - EverShop resolves these modules at runtime
+        const { update } = await import('@evershop/postgres-query-builder');
+        await update('shipment')
+          .given({
             carrier: service.getProviderName(providerCode),
             tracking_number: result.trackingNumber,
             provider_code: providerCode,
@@ -179,13 +179,15 @@ export default async function shippingOrderProcessor(order: any, context: any) {
             metadata: result.metadata ? JSON.stringify(result.metadata) : null,
             updated_at: new Date()
           })
+          .where('shipment_order_id', '=', order.order_id)
           .execute(pool);
       } else {
         // Создаем новое отправление
+        // @ts-ignore - EverShop resolves these modules at runtime
+        const { insert } = await import('@evershop/postgres-query-builder');
         const { v4: uuidv4 } = await import('uuid');
-        await select()
-          .from('shipment')
-          .insert({
+        await insert('shipment')
+          .given({
             uuid: uuidv4(),
             shipment_order_id: order.order_id,
             carrier: service.getProviderName(providerCode),
@@ -202,10 +204,11 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       }
 
       // Добавляем запись в order_activity
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { insert } = await import('@evershop/postgres-query-builder');
       const { v4: uuidv4 } = await import('uuid');
-      await select()
-        .from('order_activity')
-        .insert({
+      await insert('order_activity')
+        .given({
           uuid: uuidv4(),
           order_activity_order_id: order.order_id,
           comment: `Отправление создано в ${service.getProviderName(providerCode)}. Трек-номер: ${result.trackingNumber}`,
@@ -267,6 +270,17 @@ export default async function shippingOrderProcessor(order: any, context: any) {
           logger.error('Failed to send email to seller', { error: emailError.message });
         }
       }
+    } catch (dbError: any) {
+      // Ошибка сохранения в БД - логируем, но не блокируем процесс
+      // @ts-ignore
+      const { getLogger } = await import('@evershop/evershop/lib/log/log');
+      const logger = getLogger();
+      logger.error('Failed to save shipment to database', {
+        orderId: order.order_id,
+        error: dbError.message
+      });
+      throw dbError; // Пробрасываем дальше для обработки внешним catch
+    }
   } catch (error: any) {
     // Логируем ошибку, но не блокируем создание заказа
     // @ts-ignore
@@ -281,14 +295,13 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     // Сохраняем ошибку в order_activity
     try {
       // @ts-ignore
-      const { select } = await import('@evershop/postgres-query-builder');
+      const { insert } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
       const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
       const { v4: uuidv4 } = await import('uuid');
 
-      await select()
-        .from('order_activity')
-        .insert({
+      await insert('order_activity')
+        .given({
           uuid: uuidv4(),
           order_activity_order_id: order.order_id,
           comment: `Ошибка создания отправления: ${error.message}. Требуется ручное создание.`,

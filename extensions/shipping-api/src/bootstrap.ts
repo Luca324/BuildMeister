@@ -21,6 +21,9 @@ export default () => {
 
   // Регистрируем процессор создания отправления после оплаты
   // Процессор вызывается после создания заказа
-  addProcessor('orderCreateAfter', shippingOrderProcessor, 100);
+  // @ts-ignore - EverShop resolves processor signature at runtime
+  addProcessor('orderCreateAfter', async (order: any, context: any) => {
+    await shippingOrderProcessor(order, context);
+  }, 100);
 };
 

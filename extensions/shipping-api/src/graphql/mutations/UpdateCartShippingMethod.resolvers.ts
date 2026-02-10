@@ -31,16 +31,17 @@ export default {
       }
 
       // Обновляем метод доставки и стоимость
-      await select()
-        .from('cart')
-        .where('cart_id', '=', cartId)
-        .update({
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { update } = await import('@evershop/postgres-query-builder');
+      await update('cart')
+        .given({
           shipping_method: JSON.stringify(methodData),
           shipping_method_name: methodData.name || methodData.provider,
           shipping_fee_excl_tax: methodData.price || 0,
           shipping_fee_incl_tax: methodData.price || 0,
           updated_at: new Date()
         })
+        .where('cart_id', '=', cartId)
         .execute(pool);
 
       // Пересчитываем итоговую стоимость
