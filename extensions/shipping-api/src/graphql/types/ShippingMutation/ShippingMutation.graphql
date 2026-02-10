@@ -1,4 +1,10 @@
+# Расширяем тип Mutation мутациями доставки
 extend type Mutation {
+  """
+  Расчет стоимости доставки от всех активных провайдеров
+  """
+  calculateShipping(cartId: ID!): [ShippingProviderOptions!]!
+  
   """
   Обновление метода доставки в корзине
   """
@@ -8,4 +14,3 @@ extend type Mutation {
 type UpdateCartShippingMethodPayload {
   cart: Cart
 }
-

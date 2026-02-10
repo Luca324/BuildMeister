@@ -1,12 +1,12 @@
 /**
- * GraphQL resolver для расчета стоимости доставки
+ * GraphQL resolvers для мутаций доставки
  */
 
-import { ShippingProviderService } from '../../services/ShippingProviderService.js';
-import { toProviderFormat } from '../../mappers/AddressMapper.js';
+import { ShippingProviderService } from '../../../services/ShippingProviderService.js';
+import { toProviderFormat } from '../../../mappers/AddressMapper.js';
 import {
   ShippingCalculationRequest
-} from '../../adapters/types.js';
+} from '../../../adapters/types.js';
 
 export default {
   Mutation: {
@@ -131,6 +131,57 @@ export default {
       const results = await service.calculateAll(calculationRequest);
 
       return results;
+    },
+    
+    updateCartShippingMethod: async (_: any, { cartId, shippingMethod }: { cartId: string, shippingMethod: string }) => {
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { select } = await import('@evershop/postgres-query-builder');
+      // @ts-ignore
+      const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
+      // @ts-ignore - EverShop resolves these modules at runtime
+      const { update } = await import('@evershop/postgres-query-builder');
+
+      // Парсим shippingMethod
+      let methodData: any;
+      try {
+        methodData = typeof shippingMethod === 'string' 
+          ? JSON.parse(shippingMethod) 
+          : shippingMethod;
+      } catch (e) {
+        throw new Error('Invalid shipping method format');
+      }
+
+      // Загружаем корзину
+      const cart = await select()
+        .from('cart')
+        .where('cart_id', '=', cartId)
+        .load(pool);
+
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      // Обновляем метод доставки и стоимость
+      await update('cart')
+        .given({
+          shipping_method: JSON.stringify(methodData),
+          shipping_method_name: methodData.name || methodData.provider,
+          shipping_fee_excl_tax: methodData.price || 0,
+          shipping_fee_incl_tax: methodData.price || 0,
+          updated_at: new Date()
+        })
+        .where('cart_id', '=', cartId)
+        .execute(pool);
+
+      // Загружаем обновленную корзину
+      const updatedCart = await select()
+        .from('cart')
+        .where('cart_id', '=', cartId)
+        .load(pool);
+
+      return {
+        cart: updatedCart
+      };
     }
   }
 };
