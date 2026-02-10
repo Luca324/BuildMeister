@@ -396,4 +396,3 @@ PostNord формат:
 2. Создать ShippingProviderService для управления адаптерами
 3. Зарегистрировать процессоры EverShop
 
-

@@ -435,4 +435,3 @@ mutation UpdateShippingMethod($cartId: ID!, $shippingMethod: JSON!) {
 2. Реализовать процессор создания отправления
 3. Реализовать отправку email продавцу
 
-
