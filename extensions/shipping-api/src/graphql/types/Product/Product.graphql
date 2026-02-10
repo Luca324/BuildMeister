@@ -1,0 +1,6 @@
+extend type Product {
+  length_cm: Float
+  width_cm: Float
+  height_cm: Float
+}
+
