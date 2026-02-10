@@ -4,7 +4,6 @@
 .env
 /evershop
 themes/sample
-AREA_SYSTEM_GUIDE.
 .specstory/
 backups/
 nginx/ssl/cert.pem
