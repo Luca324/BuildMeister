@@ -14,7 +14,7 @@ export default {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
-      const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
+      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
 
       // Загружаем корзину
       const cart = await select()
@@ -137,7 +137,7 @@ export default {
       // @ts-ignore - EverShop resolves these modules at runtime
       const { select } = await import('@evershop/postgres-query-builder');
       // @ts-ignore
-      const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
+      const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
       // @ts-ignore - EverShop resolves these modules at runtime
       const { update } = await import('@evershop/postgres-query-builder');
 

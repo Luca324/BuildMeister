@@ -53,7 +53,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
     // @ts-ignore
     const { select } = await import('@evershop/postgres-query-builder');
     // @ts-ignore
-    const { pool } = await import('@evershop/postgres-query-builder/lib/pool');
+    const { pool } = await import('@evershop/evershop/lib/postgres/connection.js');
 
     // Загружаем адрес доставки
     const shippingAddress = await select()
