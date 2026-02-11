@@ -80,6 +80,17 @@ export class PostNordAdapter extends BaseShippingAdapter {
       return this.config;
     }
 
+    /**
+     * - Всегда проверяйте package.json модуля на наличие поля "exports"
+     * - Используйте только пути, указанные в "exports"
+     * - Если нужно подключиться к БД, используйте '@evershop/evershop/lib/postgres'
+     * 
+     * ПРИМЕЧАНИЕ О ТИПАХ:
+     * - pool имеет тип Pool (из pg)
+     * - getConnection() возвращает PoolClient
+     * - Оба работают с методами load() и execute() из query-builder
+     * - Используем `any` для connection, т.к. типы могут конфликтовать из-за runtime resolution
+     */
     // @ts-ignore - EverShop resolves these modules at runtime
     const { select } = await import('@evershop/postgres-query-builder');
     // @ts-ignore
@@ -190,6 +201,25 @@ export class PostNordAdapter extends BaseShippingAdapter {
     try {
       const config = await this.getConfig();
 
+      /**
+       * ОШИБКА, КОТОРУЮ МЫ ФИКСИЛИ:
+       * Изначально был определен тип для apiRequest без поля declaredValue:
+       * const apiRequest: { fromCountryCode: string; ... } = { ... }
+       * 
+       * ПРОБЛЕМА:
+       * - TypeScript выдавал ошибку: "Property 'declaredValue' does not exist on type"
+       * - Мы пытались динамически добавить свойство declaredValue, но TypeScript не знал о нем
+       * - Ошибка возникала на строках 209 и 302
+       * 
+       * РЕШЕНИЕ:
+       * - Изменили тип на `any` для apiRequest: `const apiRequest: any = { ... }`
+       * - Это позволяет динамически добавлять свойства во время выполнения
+       * 
+       * КАК ИЗБЕЖАТЬ В БУДУЩЕМ:
+       * - Если нужно динамически добавлять свойства, используйте `any` или `Record<string, any>`
+       * - Или определите полный тип заранее с опциональными полями: `{ ...; declaredValue?: {...} }`
+       * - В данном случае `any` оправдан, т.к. структура запроса к API может меняться
+       */
       const apiRequest: any = {
         fromCountryCode: request.from.countryCode,
         fromPostalCode: request.from.postalCode,
@@ -208,6 +238,7 @@ export class PostNordAdapter extends BaseShippingAdapter {
       };
 
       // Добавляем объявленную стоимость, если указана
+      // Это поле опционально и добавляется только если указано в запросе
       if (request.declaredValue) {
         apiRequest.declaredValue = {
           amount: request.declaredValue.amount,

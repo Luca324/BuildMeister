@@ -102,6 +102,27 @@ export class ShippingProviderService {
 
   /**
    * Параллельный расчет стоимости доставки от всех активных провайдеров
+   * 
+   * АРХИТЕКТУРА:
+   * - Запросы к разным провайдерам выполняются параллельно для скорости
+   * - Используется Promise.allSettled вместо Promise.all для устойчивости к ошибкам
+   * - Если один провайдер недоступен, остальные продолжают работать
+   * 
+   * ПРОЦЕСС:
+   * 1. Получаем список активных провайдеров из конфигурации
+   * 2. Для каждого провайдера вызываем calculateShipping() параллельно
+   * 3. Обрабатываем результаты: успешные и ошибки
+   * 4. Возвращаем массив результатов с вариантами доставки или ошибками
+   * 
+   * ОБРАБОТКА ОШИБОК:
+   * - Ошибки одного провайдера не блокируют остальные
+   * - Ошибки возвращаются в поле error для отображения пользователю
+   * - Пользователь видит, какие провайдеры доступны, а какие нет
+   * 
+   * ПРОИЗВОДИТЕЛЬНОСТЬ:
+   * - Все запросы выполняются одновременно (не последовательно)
+   * - Время выполнения = время самого медленного запроса, а не сумма всех запросов
+   * - Если 3 провайдера по 2 секунды каждый, общее время = ~2 секунды, а не 6
    */
   async calculateAll(request: ShippingCalculationRequest): Promise<ProviderResult[]> {
     const activeAdapters = await this.getActiveProviders();
@@ -110,8 +131,16 @@ export class ShippingProviderService {
       return [];
     }
 
-    // Используем Promise.allSettled для параллельного выполнения всех запросов
-    // Это гарантирует, что ошибка одного провайдера не блокирует остальные
+    /**
+     * Promise.allSettled vs Promise.all:
+     * - Promise.all: останавливается при первой ошибке, остальные запросы отменяются
+     * - Promise.allSettled: ждет завершения всех запросов, даже если некоторые упали
+     * 
+     * Мы используем Promise.allSettled, чтобы:
+     * - Получить результаты от всех провайдеров, даже если один недоступен
+     * - Показать пользователю все доступные варианты доставки
+     * - Не блокировать интерфейс из-за одного недоступного провайдера
+     */
     const results = await Promise.allSettled(
       activeAdapters.map(async (adapter) => {
         try {
@@ -123,6 +152,8 @@ export class ShippingProviderService {
             error: undefined
           };
         } catch (error: any) {
+          // Ошибка конкретного провайдера не должна блокировать остальные
+          // Возвращаем результат с ошибкой для отображения пользователю
           return {
             provider: adapter.getProviderCode(),
             providerName: adapter.getProviderName(),
@@ -134,10 +165,14 @@ export class ShippingProviderService {
     );
 
     // Преобразуем результаты Promise.allSettled в массив ProviderResult
+    // Promise.allSettled возвращает массив { status: 'fulfilled'|'rejected', value|reason }
     return results.map((result, index) => {
       if (result.status === 'fulfilled') {
+        // Запрос успешно выполнен
         return result.value;
       } else {
+        // Запрос упал с ошибкой (не должно происходить, т.к. мы ловим ошибки в try-catch)
+        // Но на всякий случай обрабатываем этот случай
         const adapter = activeAdapters[index];
         return {
           provider: adapter.getProviderCode(),

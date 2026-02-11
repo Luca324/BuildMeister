@@ -205,7 +205,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
           .execute(connection);
       }
 
-      // Добавляем запись в order_activity
+      // Добавляем запись в order_activity для истории заказа
       // @ts-ignore - EverShop resolves these modules at runtime
       const { insert } = await import('@evershop/postgres-query-builder');
       const { v4: uuidv4 } = await import('uuid');
@@ -294,7 +294,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       stack: error.stack
     });
 
-    // Сохраняем ошибку в order_activity
+    // Сохраняем ошибку в order_activity для истории заказа
     try {
       // @ts-ignore
       const { insert } = await import('@evershop/postgres-query-builder');
@@ -315,6 +315,7 @@ export default async function shippingOrderProcessor(order: any, context: any) {
         })
         .execute(connection);
     } catch (activityError: any) {
+      // Логируем ошибку сохранения в order_activity, но не блокируем процесс
       logger.error('Failed to save error to order_activity', { error: activityError.message });
     }
   }

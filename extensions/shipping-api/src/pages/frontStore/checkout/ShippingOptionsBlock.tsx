@@ -32,9 +32,11 @@ interface ShippingOptionsBlockProps {
       postcode?: string;
       city?: string;
       address1?: string;
+      // country может быть строкой ("NO") или объектом ({ code: "NO" })
       country?: {
         code?: string;
       } | string;
+      // province может быть строкой или объектом
       province?: {
         code?: string;
       } | string;
@@ -50,7 +52,9 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce функция
+  /**
+   * Debounce функция для ограничения частоты вызовов API
+   */
   const debounce = useCallback((func: Function, wait: number) => {
     let timeout: NodeJS.Timeout | null = null;
     return (...args: any[]) => {
@@ -70,7 +74,26 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
            countryCode;
   }, []);
 
-  // Вызов API расчета доставки
+  /**
+   * Вызов GraphQL mutation для расчета стоимости доставки
+   * 
+   * ПРОЦЕСС:
+   * 1. Вызывает mutation calculateShipping с ID корзины
+   * 2. Backend загружает адрес доставки и товары из корзины
+   * 3. Вызывает ShippingProviderService.calculateAll() для всех активных провайдеров
+   * 4. Возвращает варианты доставки от всех провайдеров параллельно
+   * 5. Отображает варианты пользователю
+   * 
+   * ОБРАБОТКА ОШИБОК:
+   * - Если API недоступен, показываем сообщение об ошибке
+   * - Если провайдер недоступен, показываем его в списке с пометкой "временно недоступен"
+   * - Ошибки не блокируют отображение других провайдеров
+   * 
+   * СОСТОЯНИЕ:
+   * - loading: показывает индикатор загрузки во время запроса
+   * - error: общая ошибка (если все провайдеры недоступны)
+   * - providers: массив результатов от каждого провайдера (может содержать ошибки)
+   */
   const calculateShipping = useCallback(async (cartId: string) => {
     if (!cartId) return;
 
@@ -78,6 +101,8 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     setError(null);
 
     try {
+      // GraphQL mutation для расчета доставки
+      // Вызывается на backend и возвращает варианты от всех активных провайдеров
       const CALCULATE_SHIPPING_MUTATION = `
         mutation CalculateShipping($cartId: ID!) {
           calculateShipping(cartId: $cartId) {
@@ -105,8 +130,11 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
         throw new Error(result.error.message || 'Failed to calculate shipping');
       }
 
+      // Сохраняем результаты от всех провайдеров
+      // Каждый провайдер может иметь варианты доставки или ошибку
       setProviders(result.data?.calculateShipping || []);
     } catch (err: any) {
+      // Общая ошибка (например, если все провайдеры недоступны)
       setError(err.message || 'Failed to calculate shipping options');
       setProviders([]);
     } finally {
@@ -114,7 +142,11 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     }
   }, [client]);
 
-  // Debounced версия calculateShipping
+  /**
+   * Debounced версия calculateShipping
+   * 
+   * Использует useMemo для создания функции один раз и переиспользования
+   */
   const debouncedCalculateShipping = useMemo(
     () => debounce(calculateShipping, 700),
     [calculateShipping, debounce]
@@ -126,8 +158,10 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
     if (!cart?.shippingAddress) return;
 
     if (isAddressComplete(cart.shippingAddress)) {
+      // Адрес полный - вызываем API расчета доставки (с debounce)
       debouncedCalculateShipping(cart.cartId);
     } else {
+      // Адрес неполный - очищаем варианты доставки
       setProviders([]);
       setSelectedOption(null);
     }
@@ -342,7 +376,24 @@ ShippingOptionsBlock.propTypes = {
   })
 };
 
-// Регистрация компонента в системе Area для автоматического отображения на странице checkout
+/**
+ * Регистрация компонента в системе Area EverShop
+ * 
+ * АВТОМАТИЧЕСКОЕ ОТОБРАЖЕНИЕ:
+ * - Компонент автоматически появится на странице checkout
+ * - areaId: 'checkoutShippingAddressForm' - область после формы адреса доставки
+ * - sortOrder: 100 - порядок отображения (чем больше, тем ниже)
+ * 
+ * КАК ЭТО РАБОТАЕТ:
+ * - EverShop автоматически находит все компоненты в папке pages/
+ * - Проверяет наличие export const layout
+ * - Добавляет компонент в указанную область (Area) на странице
+ * - Не нужно вручную импортировать компонент в теме или других местах
+ * 
+ * ПРИМЕЧАНИЕ:
+ * - Компонент будет отображаться только если cart и shippingAddress существуют
+ * - Если адрес не заполнен, компонент возвращает null (не отображается)
+ */
 export const layout = {
   areaId: 'checkoutShippingAddressForm',
   sortOrder: 100

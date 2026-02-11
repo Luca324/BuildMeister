@@ -163,7 +163,7 @@ export default {
         throw new Error('Cart not found');
       }
 
-      // Обновляем метод доставки и стоимость
+      // Обновляем метод доставки и стоимость в корзине
       await update('cart')
         .given({
           shipping_method: JSON.stringify(methodData),
