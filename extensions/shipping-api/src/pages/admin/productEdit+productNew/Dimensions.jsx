@@ -9,33 +9,39 @@ function ProductDimensions({ product }) {
 
   return (
     <div className="grid grid-cols-3 gap-4 mt-6">
-      <Field
-        id="length_cm"
-        name="length_cm"
-        value={lengthCm}
-        placeholder="Length"
-        label="Length (cm)"
-        type="text"
-        validationRules={['notEmpty']}
-      />
-      <Field
-        id="width_cm"
-        name="width_cm"
-        value={widthCm}
-        placeholder="Width"
-        label="Width (cm)"
-        type="text"
-        validationRules={['notEmpty']}
-      />
-      <Field
-        id="height_cm"
-        name="height_cm"
-        value={heightCm}
-        placeholder="Height"
-        label="Height (cm)"
-        type="text"
-        validationRules={['notEmpty']}
-      />
+      <div>
+        <Field
+          id="length_cm"
+          name="length_cm"
+          value={lengthCm}
+          placeholder="Length"
+          label="Length (cm)"
+          type="text"
+          validationRules={['notEmpty']}
+        />
+      </div>
+      <div>
+        <Field
+          id="width_cm"
+          name="width_cm"
+          value={widthCm}
+          placeholder="Width"
+          label="Width (cm)"
+          type="text"
+          validationRules={['notEmpty']}
+        />
+      </div>
+      <div>
+        <Field
+          id="height_cm"
+          name="height_cm"
+          value={heightCm}
+          placeholder="Height"
+          label="Height (cm)"
+          type="text"
+          validationRules={['notEmpty']}
+        />
+      </div>
     </div>
   );
 }
