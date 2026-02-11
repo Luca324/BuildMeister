@@ -13,8 +13,8 @@ function ProductDimensions({ product }) {
         id="length_cm"
         name="length_cm"
         value={lengthCm}
-        placeholder="Длина"
-        label="Длина (см)"
+        placeholder="Length"
+        label="Length (cm)"
         type="text"
         validationRules={['notEmpty']}
       />
@@ -22,8 +22,8 @@ function ProductDimensions({ product }) {
         id="width_cm"
         name="width_cm"
         value={widthCm}
-        placeholder="Ширина"
-        label="Ширина (см)"
+        placeholder="Width"
+        label="Width (cm)"
         type="text"
         validationRules={['notEmpty']}
       />
@@ -31,8 +31,8 @@ function ProductDimensions({ product }) {
         id="height_cm"
         name="height_cm"
         value={heightCm}
-        placeholder="Высота"
-        label="Высота (см)"
+        placeholder="Height"
+        label="Height (cm)"
         type="text"
         validationRules={['notEmpty']}
       />
