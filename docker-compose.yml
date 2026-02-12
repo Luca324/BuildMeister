@@ -33,16 +33,13 @@ services:
       - myevershop
     depends_on:
       - database
-    # Убираем проброс порта наружу - теперь доступ только через nginx
     expose:
       - "80"
     volumes:
-      - ./data-export:/app/data-export:rw # чтобы изменения в этой папке отображались в контейнере без пересборки
       - ./config:/app/config:rw 
       - ./scripts:/app/scripts:rw 
       - ./backups:/app/backups:rw # Монтируем папку с дампами для автоматического восстановления
   
-  #The postgres database: 
   database:
     image: postgres:16
     restart: unless-stopped
@@ -55,8 +52,6 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     networks:
       - myevershop
-    # ВАЖНО: Порт НЕ пробрасывается наружу для безопасности!
-    # База доступна только внутри Docker сети
 
 networks:
   myevershop:
