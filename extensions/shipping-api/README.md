@@ -1,6 +1,6 @@
 # Shipping API Extension для EverShop
 
-Расширение для интеграции с провайдерами доставки: PostNord, Helthjem, Bring.
+Расширение для интеграции с провайдерами доставки: PostNord, Helthjem.
 
 ## Установка
 

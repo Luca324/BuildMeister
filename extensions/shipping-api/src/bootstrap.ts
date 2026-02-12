@@ -6,7 +6,7 @@
  * 
  * Порядок выполнения:
  * 1. Создается singleton экземпляр ShippingProviderService
- * 2. Регистрируются адаптеры провайдеров (PostNord, в будущем Helthjem, Bring)
+ * 2. Регистрируются адаптеры провайдеров (PostNord, в будущем и Helthjem)
  * 3. Регистрируется процессор для автоматического создания отправлений после оплаты
  */
 
@@ -26,7 +26,6 @@ export default () => {
   shippingService.registerAdapter(new PostNordAdapter());
   // В будущем можно добавить:
   // shippingService.registerAdapter(new HelthjemAdapter());
-  // shippingService.registerAdapter(new BringAdapter());
 
   /**
    * Регистрация процессора создания отправления после оплаты заказа

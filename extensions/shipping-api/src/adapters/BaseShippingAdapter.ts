@@ -39,7 +39,7 @@ export abstract class BaseShippingAdapter {
    * - Сохранения в БД (provider_code в таблице shipment)
    * - Выбора конкретного провайдера из списка
    * 
-   * Примеры: 'postnord', 'helthjem', 'bring'
+   * Примеры: 'postnord', 'helthjem'
    */
   abstract getProviderCode(): string;
 
