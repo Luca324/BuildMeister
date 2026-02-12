@@ -52,6 +52,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?ERROR DB_PASSWORD не определена в .env файле}
       POSTGRES_USER: ${DB_USER:?ERROR DB_USER не определена в .env файле}
       POSTGRES_DB: ${DB_NAME:?ERROR DB_NAME не определена в .env файле}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     networks:
       - myevershop
     # ВАЖНО: Порт НЕ пробрасывается наружу для безопасности!
