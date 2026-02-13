@@ -1,22 +1,5 @@
-diff --git a/node_modules/@evershop/s3_file_storage/README.md b/node_modules/@evershop/s3_file_storage/README.md
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/bootstrap.d.ts b/node_modules/@evershop/s3_file_storage/dist/bootstrap.d.ts
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/bootstrap.js b/node_modules/@evershop/s3_file_storage/dist/bootstrap.js
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/bootstrap.js.map b/node_modules/@evershop/s3_file_storage/dist/bootstrap.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.d.ts b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.d.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
-old mode 100644
-new mode 100755
-index 09edceb..5b84285
+index 09edceb..bec8a45 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js
 @@ -1,6 +1,11 @@
@@ -42,16 +25,8 @@ index 09edceb..5b84285
                  return {
                      name: fileName,
                      url: fileURL,
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js.map b/node_modules/@evershop/s3_file_storage/dist/services/awsFileBrowser.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.d.ts b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.d.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
-old mode 100644
-new mode 100755
-index 30a7d64..ac5d8a5
+index 30a7d64..1f8b906 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js
 @@ -1,6 +1,11 @@
@@ -67,16 +42,8 @@ index 30a7d64..ac5d8a5
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFileDeleter = {
      delete: async (path) => {
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js.map b/node_modules/@evershop/s3_file_storage/dist/services/awsFileDeleter.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.d.ts b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.d.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
-old mode 100644
-new mode 100755
-index d5f3923..590d890
+index d5f3923..24f18bf 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js
 @@ -1,7 +1,14 @@
@@ -105,16 +72,8 @@ index d5f3923..590d890
              });
          });
          return uploadedFiles;
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js.map b/node_modules/@evershop/s3_file_storage/dist/services/awsFileUploader.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.d.ts b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.d.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
-old mode 100644
-new mode 100755
-index 642c6ad..37b5729
+index 642c6ad..54f0157 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js
 @@ -1,6 +1,11 @@
@@ -130,16 +89,8 @@ index 642c6ad..37b5729
  const bucketName = getEnv("AWS_BUCKET_NAME");
  export const awsFolderCreator = {
      create: async (path) => {
-diff --git a/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js.map b/node_modules/@evershop/s3_file_storage/dist/services/awsFolderCreator.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.d.ts b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.d.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
-old mode 100644
-new mode 100755
-index 977ba54..cfffeaf
+index 977ba54..e8c9919 100644
 --- a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
 +++ b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js
 @@ -9,14 +9,22 @@ import { error } from "@evershop/evershop/lib/log";
@@ -201,33 +152,11 @@ index 977ba54..cfffeaf
              // Target path for single variant by adding a '-single' just before the extension
              const singleObjectUrl = originalObjectUrl.replace(ext, `-single${ext}`);
              // Target path for listing variant by adding a '-listing' just before the extension
-diff --git a/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js.map b/node_modules/@evershop/s3_file_storage/dist/subscribers/product_image_added/awsGenerateProductImageVariant.js.map
-old mode 100644
-new mode 100755
-diff --git a/node_modules/@evershop/s3_file_storage/src/bootstrap.ts b/node_modules/@evershop/s3_file_storage/src/bootstrap.ts
-old mode 100644
-new mode 100755
 diff --git a/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts b/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts
-old mode 100644
-new mode 100755
-index b3f38d7..9ed8cbe
+index b3f38d7..8d7bb42 100644
 --- a/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts
 +++ b/node_modules/@evershop/s3_file_storage/src/services/awsFileBrowser.ts
-@@ -1,7 +1,12 @@
- import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
- import { getEnv } from "@evershop/evershop/lib/util/getEnv";
- 
--const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
-+// Patched for Yandex S3 *: endpoint + forcePathStyle
-+const s3Client = new S3Client({
-+  region: getEnv("AWS_REGION"),
-+  endpoint: getEnv("AWS_ENDPOINT"),
-+  forcePathStyle: true
-+});
- const bucketName = getEnv("AWS_BUCKET_NAME");
- 
- export const awsFileBrowser = {
-@@ -27,7 +32,7 @@ export const awsFileBrowser = {
+@@ -27,7 +27,7 @@ export const awsFileBrowser = {
      const files = data.Contents
        ? data.Contents.filter((item) => item.Size !== 0).map((object) => {
            const fileName = object.Key?.split("/").pop();
@@ -237,9 +166,7 @@ index b3f38d7..9ed8cbe
            return {
              name: fileName,
 diff --git a/node_modules/@evershop/s3_file_storage/src/services/awsFileDeleter.ts b/node_modules/@evershop/s3_file_storage/src/services/awsFileDeleter.ts
-old mode 100644
-new mode 100755
-index 8563cef..9e09d5e
+index 8563cef..ccb2852 100644
 --- a/node_modules/@evershop/s3_file_storage/src/services/awsFileDeleter.ts
 +++ b/node_modules/@evershop/s3_file_storage/src/services/awsFileDeleter.ts
 @@ -5,7 +5,10 @@ import {
@@ -254,81 +181,11 @@ index 8563cef..9e09d5e
  const bucketName = getEnv("AWS_BUCKET_NAME");
  
  export const awsFileDeleter = {
-diff --git a/node_modules/@evershop/s3_file_storage/src/services/awsFileUploader.ts b/node_modules/@evershop/s3_file_storage/src/services/awsFileUploader.ts
-old mode 100644
-new mode 100755
-index 5b86075..26e598f
---- a/node_modules/@evershop/s3_file_storage/src/services/awsFileUploader.ts
-+++ b/node_modules/@evershop/s3_file_storage/src/services/awsFileUploader.ts
-@@ -7,7 +7,13 @@ import {
- import { getEnv } from "@evershop/evershop/lib/util/getEnv";
- import { UploadedFile } from "@evershop/evershop/cms/services";
- 
--const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
-+// Patched for Yandex S3 *: endpoint + forcePathStyle
-+const s3clientparams = { 
-+  region: getEnv("AWS_REGION"),
-+  endpoint: getEnv("AWS_ENDPOINT"),
-+  forcePathStyle: true
-+}
-+const s3Client = new S3Client(s3clientparams);
- const bucketName = getEnv("AWS_BUCKET_NAME");
- 
- export const awsFileUploader = {
-@@ -37,10 +43,8 @@ export const awsFileUploader = {
-         name: files[index].filename,
-         mimetype: files[index].mimetype,
-         size: files[index].size,
--        url: `https://${bucketName}.s3.amazonaws.com/${path.join(
--          requestedPath,
--          files[index].filename
--        )}`,
-+        // Patched for Yandex S3 *
-+        url: `${getEnv("AWS_ENDPOINT")}/${bucketName}/${path.posix.join(requestedPath ?? "", files[index].filename)}`,
-       });
-     });
- 
-diff --git a/node_modules/@evershop/s3_file_storage/src/services/awsFolderCreator.ts b/node_modules/@evershop/s3_file_storage/src/services/awsFolderCreator.ts
-old mode 100644
-new mode 100755
-index 139aae0..4a61df6
---- a/node_modules/@evershop/s3_file_storage/src/services/awsFolderCreator.ts
-+++ b/node_modules/@evershop/s3_file_storage/src/services/awsFolderCreator.ts
-@@ -1,7 +1,12 @@
- import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
- import { getEnv } from "@evershop/evershop/lib/util/getEnv";
- 
--const s3Client = new S3Client({ region: getEnv("AWS_REGION") });
-+// Patched for Yandex S3 *: endpoint + forcePathStyle
-+const s3Client = new S3Client({
-+  region: getEnv("AWS_REGION"),
-+  endpoint: getEnv("AWS_ENDPOINT"),
-+  forcePathStyle: true
-+});
- const bucketName = getEnv("AWS_BUCKET_NAME");
- 
- export const awsFolderCreator = {
 diff --git a/node_modules/@evershop/s3_file_storage/src/subscribers/product_image_added/awsGenerateProductImageVariant.ts b/node_modules/@evershop/s3_file_storage/src/subscribers/product_image_added/awsGenerateProductImageVariant.ts
-old mode 100644
-new mode 100755
-index 80fc2e2..c3dbe9b
+index 80fc2e2..ef28b80 100644
 --- a/node_modules/@evershop/s3_file_storage/src/subscribers/product_image_added/awsGenerateProductImageVariant.ts
 +++ b/node_modules/@evershop/s3_file_storage/src/subscribers/product_image_added/awsGenerateProductImageVariant.ts
-@@ -13,8 +13,11 @@ import { error } from "@evershop/evershop/lib/log";
- 
- async function downloadObjectToBuffer(objectUrl: string) {
-   const parsedUrl = new URL(objectUrl);
--  const bucketName = parsedUrl.host.split(".")[0]; // Extract the bucket name
--  const objectKey = parsedUrl.pathname.substr(1); // Extract the object key (remove leading '/')
-+  const bucketName = getEnv("AWS_BUCKET_NAME"); // Extract the bucket name for Yandex S3 *
-+  // Extract the object key (remove leading '/' and bucket segment) for Yandex S3 *
-+  const pathParts = parsedUrl.pathname.replace(/^\/+/, "").split("/");
-+  pathParts.shift();
-+  const objectKey = pathParts.join("/");
- 
-   const params = {
-     Bucket: bucketName,
-@@ -22,7 +25,11 @@ async function downloadObjectToBuffer(objectUrl: string) {
+@@ -22,7 +22,11 @@ async function downloadObjectToBuffer(objectUrl: string) {
    };
  
    const getObjectCommand = new GetObjectCommand(params);
@@ -341,19 +198,7 @@ index 80fc2e2..c3dbe9b
    const data = await s3Client.send(getObjectCommand);
    // Get content as a buffer from the data.Body object
    const buffer = await data.Body?.transformToByteArray();
-@@ -45,7 +52,10 @@ async function resizeAndUploadImage(
- 
-   // Upload the resized image
-   const parsedUrl = new URL(resizedObjectUrl);
--  const objectKey = parsedUrl.pathname.substr(1); // Extract the object key (remove leading '/')
-+  // Extract the object key (remove leading '/' and bucket segment) for Yandex S3 *
-+  const uploadPathParts = parsedUrl.pathname.replace(/^\/+/, "").split("/");
-+  uploadPathParts.shift();
-+  const objectKey = uploadPathParts.join("/");
- 
-   const uploadParams = {
-     Bucket: bucketName,
-@@ -59,13 +69,23 @@ async function resizeAndUploadImage(
+@@ -59,13 +63,23 @@ async function resizeAndUploadImage(
  }
  
  export default async function awsGenerateProductImageVariant(data) {
@@ -378,7 +223,7 @@ index 80fc2e2..c3dbe9b
        // Target path for single variant by adding a '-single' just before the extension
        const singleObjectUrl = originalObjectUrl.replace(ext, `-single${ext}`);
        // Target path for listing variant by adding a '-listing' just before the extension
-@@ -103,6 +123,10 @@ export default async function awsGenerateProductImageVariant(data) {
+@@ -103,6 +117,10 @@ export default async function awsGenerateProductImageVariant(data) {
          getConfig("catalog.product.image.thumbnail.height", 100)
        );
  
@@ -389,6 +234,3 @@ index 80fc2e2..c3dbe9b
        // Update the record in the database with the new URLs in the variant columns
        await update("product_image")
          .given({
-diff --git a/node_modules/@evershop/s3_file_storage/tsconfig.json b/node_modules/@evershop/s3_file_storage/tsconfig.json
-old mode 100644
-new mode 100755
