@@ -10,7 +10,19 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL сертификаты 
       - ./nginx/html:/usr/share/nginx/html:ro  # Страница технического обслуживания
-      - nginx_logs:/var/log/nginxenvironment:
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - myevershop
+
+  app:
+    build: 
+      context: .  # путь к папке с Dockerfile
+      dockerfile: Dockerfile
+    restart: always
+    command: ["/bin/sh", "./scripts/entrypoint.sh"]
+    environment:
       DB_HOST: ${DB_HOST:?ERROR DB_HOST не определена в .env файле}
       DB_PORT: ${DB_PORT:?ERROR DB_PORT не определена в .env файле}
       DB_PASSWORD: ${DB_PASSWORD:?ERROR DB_PASSWORD не определена в .env файле}
@@ -28,18 +40,6 @@ services:
       AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:?ERROR AWS_BUCKET_NAME не определена в .env файле}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?ERROR AWS_ACCESS_KEY_ID не определена в .env файле}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?ERROR AWS_SECRET_ACCESS_KEY не определена в .env файле}
-    
-    depends_on:
-      - app
-    networks:
-      - myevershop
-
-  app:
-    build: 
-      context: .  # путь к папке с Dockerfile
-      dockerfile: Dockerfile
-    restart: always
-    command: ["/bin/sh", "./scripts/entrypoint.sh"]
     networks:
       - myevershop
     depends_on:
