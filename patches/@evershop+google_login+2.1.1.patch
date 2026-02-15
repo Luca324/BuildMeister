@@ -1,0 +1,135 @@
+diff --git a/node_modules/@evershop/google_login/README.md b/node_modules/@evershop/google_login/README.md
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/bootstrap.js b/node_modules/@evershop/google_login/dist/bootstrap.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/migration/Version-1.0.0.js b/node_modules/@evershop/google_login/dist/migration/Version-1.0.0.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/gauth/[auth]gAuth.js b/node_modules/@evershop/google_login/dist/pages/frontStore/gauth/[auth]gAuth.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/gauth/route.json b/node_modules/@evershop/google_login/dist/pages/frontStore/gauth/route.json
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/gCallback.js b/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/gCallback.js
+old mode 100644
+new mode 100755
+index 129bb2e..8e2fe76
+--- a/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/gCallback.js
++++ b/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/gCallback.js
+@@ -4,6 +4,7 @@ import { getEnv } from "@evershop/evershop/lib/util/getEnv";
+ import { select } from "@evershop/postgres-query-builder";
+ import { pool } from "@evershop/evershop/lib/postgres";
+ import { createCustomer } from "@evershop/evershop/customer/services";
++import { error as logError } from "@evershop/evershop/lib/log";
+ import { getGoogleAuthToken } from "../../../services/getGoogleAuthToken.js";
+ import { getGoogleUserInfo } from "../../../services/getGoogleUserInfo.js";
+ export default (async (request, response, next)=>{
+@@ -53,14 +54,14 @@ export default (async (request, response, next)=>{
+         request.locals.customer = customer;
+         request.session.save((e)=>{
+             if (e) {
+-                error(e);
++                logError(e);
+                 response.redirect(failureUrl);
+             } else {
+                 response.redirect(successUrl);
+             }
+         });
+     } catch (err) {
+-        error(err);
++        logError(err);
+         response.redirect(failureUrl);
+     }
+ });
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/route.json b/node_modules/@evershop/google_login/dist/pages/frontStore/gcallback/route.json
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLogin.js b/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLogin.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLogin.scss b/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLogin.scss
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLoginLegacy.js b/node_modules/@evershop/google_login/dist/pages/frontStore/login/GoogleLoginLegacy.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/services/getGoogleAuthToken.js b/node_modules/@evershop/google_login/dist/services/getGoogleAuthToken.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/services/getGoogleAuthUrl.js b/node_modules/@evershop/google_login/dist/services/getGoogleAuthUrl.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/dist/services/getGoogleUserInfo.js b/node_modules/@evershop/google_login/dist/services/getGoogleUserInfo.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/bootstrap.ts b/node_modules/@evershop/google_login/src/bootstrap.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/migration/Version-1.0.0.js b/node_modules/@evershop/google_login/src/migration/Version-1.0.0.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/gauth/[auth]gAuth.ts b/node_modules/@evershop/google_login/src/pages/frontStore/gauth/[auth]gAuth.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/gauth/route.json b/node_modules/@evershop/google_login/src/pages/frontStore/gauth/route.json
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/gCallback.ts b/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/gCallback.ts
+old mode 100644
+new mode 100755
+index 0476252..aed7155
+--- a/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/gCallback.ts
++++ b/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/gCallback.ts
+@@ -4,7 +4,7 @@ import { getEnv } from "@evershop/evershop/lib/util/getEnv";
+ import { select } from "@evershop/postgres-query-builder";
+ import { pool } from "@evershop/evershop/lib/postgres";
+ import { createCustomer } from "@evershop/evershop/customer/services";
+-import { error } from "@evershop/evershop/lib/log";
++import { error as logError } from "@evershop/evershop/lib/log";
+ import { getGoogleAuthToken } from "../../../services/getGoogleAuthToken.js";
+ import { getGoogleUserInfo } from "../../../services/getGoogleUserInfo.js";
+ 
+@@ -74,14 +74,14 @@ export default async (request, response, next) => {
+     request.locals.customer = customer;
+     request.session.save((e) => {
+       if (e) {
+-        error(e);
++        logError(e);
+         response.redirect(failureUrl);
+       } else {
+         response.redirect(successUrl);
+       }
+     });
+   } catch (err) {
+-    error(err);
++    logError(err);
+     response.redirect(failureUrl);
+   }
+ };
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/route.json b/node_modules/@evershop/google_login/src/pages/frontStore/gcallback/route.json
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLogin.scss b/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLogin.scss
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLogin.tsx b/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLogin.tsx
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLoginLegacy.tsx b/node_modules/@evershop/google_login/src/pages/frontStore/login/GoogleLoginLegacy.tsx
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/services/getGoogleAuthToken.ts b/node_modules/@evershop/google_login/src/services/getGoogleAuthToken.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/services/getGoogleAuthUrl.ts b/node_modules/@evershop/google_login/src/services/getGoogleAuthUrl.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/src/services/getGoogleUserInfo.ts b/node_modules/@evershop/google_login/src/services/getGoogleUserInfo.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@evershop/google_login/tsconfig.json b/node_modules/@evershop/google_login/tsconfig.json
+old mode 100644
+new mode 100755
