@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'Provisioned Dashboards'
+    orgId: 1
+    folder: ''  # оставляем пустым или укажи папку
+    type: file
+    disableDeletion: false  # можно удалять через UI
+    editable: true  # можно редактировать
+    updateIntervalSeconds: 30  # как часто проверять новые файлы
+    options:
+      path: /etc/grafana/provisioning/dashboards
