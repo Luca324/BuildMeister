@@ -47,6 +47,7 @@ chmod 600 secrets/key.pem
 npm run build  # Автоматически скомпилирует все расширения и тему перед сборкой
 npm start
 ```
+Подробнее в docs/QUICKSTART.md
 
 ### Ручная компиляция (опционально)
 
@@ -54,7 +55,7 @@ npm start
 
 ```bash
 # Компиляция всех расширений и темы
-npm run compile:extensions
+npm run prebuild
 
 # Или по отдельности:
 cd themes/tech && npm run compile && cd ../..
@@ -76,10 +77,11 @@ cd extensions/order_status_display && npm run compile && cd ../..
 
 - `docker compose down -v` (остановка и удаление контейнеров)
 - `docker compose build --no-cache` (сборка контейнеров)
+- `docker compose up` (запуск контейнеров)
 
-# Работа с контейнером
+# Работа с базой данных
 
-Если нужно попасть в контейнер app:
+Зайти в контейнер app:
 - `docker compose exec -it app sh`
 
 Там можно запустить restore БД:
@@ -89,8 +91,6 @@ cd extensions/order_status_display && npm run compile && cd ../..
 
 - `docker compose exec app npm run db:import backups/backup_name.dump`
 
-# Работа с базой данных
-
 ## Создание дампа
 
 - `docker compose exec app npm run db:export`
@@ -98,3 +98,6 @@ cd extensions/order_status_display && npm run compile && cd ../..
 ИЛИ использовать команду с автоматическим определением последнего файла:
 
 - `docker cp buildmeister-app-1:/backups/$(docker compose exec -T app sh -c 'ls -t /app/backups/backup_*.dump | head -1 | xargs basename') ./backups/`
+
+## Копирование файла дампа в хост систему
+- `docker compose cp app:/backups/backup_name.dump ./backups/`

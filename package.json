@@ -9,7 +9,6 @@
     "lint:fix": "eslint scripts/**/*.js --fix",
     "prebuild": "node scripts/compile-extensions.js",
     "build": "evershop build",
-    "compile:extensions": "node scripts/compile-extensions.js",
     "start": "evershop start",
     "start:debug": "evershop start --debug",
     "dev": "cross-env PORT=3000 evershop dev",
