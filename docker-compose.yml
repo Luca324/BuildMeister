@@ -22,24 +22,8 @@ services:
       dockerfile: Dockerfile
     restart: always
     command: ["/bin/sh", "./scripts/entrypoint.sh"]
-    environment:
-      DB_HOST: ${DB_HOST:?ERROR DB_HOST не определена в .env файле}
-      DB_PORT: ${DB_PORT:?ERROR DB_PORT не определена в .env файле}
-      DB_PASSWORD: ${DB_PASSWORD:?ERROR DB_PASSWORD не определена в .env файле}
-      DB_USER: ${DB_USER:?ERROR DB_USER не определена в .env файле}
-      DB_NAME: ${DB_NAME:?ERROR DB_NAME не определена в .env файле}
-      PORT: ${PORT:?ERROR PORT не определена в .env файле}
-      # Google login data
-      GOOGLE_LOGIN_CLIENT_ID: ${GOOGLE_LOGIN_CLIENT_ID:?ERROR GOOGLE_LOGIN_CLIENT_ID не определена в .env файле}
-      GOOGLE_LOGIN_CLIENT_SECRET: ${GOOGLE_LOGIN_CLIENT_SECRET:?ERROR GOOGLE_LOGIN_CLIENT_SECRET не определена в .env файле}
-      GOOGLE_LOGIN_SUCCESS_REDIRECT_URL: ${GOOGLE_LOGIN_SUCCESS_REDIRECT_URL:?ERROR GOOGLE_LOGIN_SUCCESS_REDIRECT_URL не определена в .env файле}
-      GOOGLE_LOGIN_FAILURE_REDIRECT_URL: ${GOOGLE_LOGIN_FAILURE_REDIRECT_URL:?ERROR GOOGLE_LOGIN_FAILURE_REDIRECT_URL не определена в .env файле}
-      # AWS S3 Configuration для Yandex S3
-      AWS_REGION: ${AWS_REGION:?ERROR AWS_REGION не определена в .env файле}
-      AWS_ENDPOINT: ${AWS_ENDPOINT:?ERROR AWS_ENDPOINT не определена в .env файле}
-      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:?ERROR AWS_BUCKET_NAME не определена в .env файле}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?ERROR AWS_ACCESS_KEY_ID не определена в .env файле}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?ERROR AWS_SECRET_ACCESS_KEY не определена в .env файле}
+    env_file:
+      - .env
     networks:
       - myevershop
     depends_on:
