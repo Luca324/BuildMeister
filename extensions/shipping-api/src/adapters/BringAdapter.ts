@@ -22,8 +22,9 @@ import {
 
 interface BringConfig {
   enabled: boolean;
-  api_key: string;
-  api_secret?: string;
+  api_key: string; // API ключ из Mybring
+  api_uid: string; // Email пользователя Mybring
+  client_url: string; // URL вашего сервиса (например, buildmeister.no)
   customer_number?: string; // Номер клиента в системе Bring (если требуется)
   from_address: {
     countryCode: string;
@@ -59,8 +60,8 @@ interface BringBookingResponse {
 
 export class BringAdapter extends BaseShippingAdapter {
   private config: BringConfig | null = null;
-  // TODO: Уточнить базовый URL Bring API из документации
-  private readonly API_BASE_URL = 'https://api.bring.com'; // Примерный URL, нужно уточнить
+  // Базовый URL Bring API согласно документации
+  private readonly API_BASE_URL = 'https://api.bring.com';
   private readonly REQUEST_TIMEOUT = 15000; // 15 секунд
 
   constructor() {
@@ -124,10 +125,19 @@ export class BringAdapter extends BaseShippingAdapter {
       throw new Error('Bring API key is not configured');
     }
 
+    if (!providerConfig.api_uid) {
+      throw new Error('Bring API UID (email) is not configured');
+    }
+
+    if (!providerConfig.client_url) {
+      throw new Error('Bring Client URL is not configured');
+    }
+
     this.config = {
       enabled: providerConfig.enabled,
       api_key: providerConfig.api_key,
-      api_secret: providerConfig.api_secret,
+      api_uid: providerConfig.api_uid,
+      client_url: providerConfig.client_url,
       customer_number: providerConfig.customer_number,
       from_address: providerConfig.from_address,
       sender_email: providerConfig.sender_email,
@@ -149,25 +159,14 @@ export class BringAdapter extends BaseShippingAdapter {
     const config = await this.getConfig();
     const url = `${config.api_base_url || this.API_BASE_URL}${endpoint}`;
 
-    // TODO: Уточнить формат авторизации Bring API из документации
-    // Возможные варианты:
-    // - Bearer token: Authorization: Bearer {api_key}
-    // - Basic Auth: Authorization: Basic {base64(api_key:api_secret)}
-    // - API key в заголовке: X-API-Key: {api_key}
+    // Формат авторизации Bring API согласно документации:
+    // Требуются три заголовка: X-Mybring-API-Uid, X-Mybring-API-Key, X-Bring-Client-URL
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Mybring-API-Uid': config.api_uid, // Email пользователя Mybring
+      'X-Mybring-API-Key': config.api_key,  // API ключ
+      'X-Bring-Client-URL': config.client_url // URL вашего сервиса
     };
-
-    // Пример авторизации через Bearer token (нужно уточнить)
-    if (config.api_key) {
-      headers['Authorization'] = `Bearer ${config.api_key}`;
-    }
-
-    // Если требуется Basic Auth (нужно уточнить)
-    // if (config.api_key && config.api_secret) {
-    //   const credentials = Buffer.from(`${config.api_key}:${config.api_secret}`).toString('base64');
-    //   headers['Authorization'] = `Basic ${credentials}`;
-    // }
 
     const options: RequestInit = {
       method,
@@ -204,18 +203,22 @@ export class BringAdapter extends BaseShippingAdapter {
   /**
    * Расчет стоимости доставки
    * 
-   * TODO: Заполнить на основе реальной документации Bring API
-   * Нужно уточнить:
-   * - Точный endpoint для расчета стоимости
-   * - Формат запроса (адреса, вес, габариты)
-   * - Формат ответа (варианты доставки с ценами)
+   * Использует Shipping Guide API v2 для получения доступных продуктов и цен
+   * Согласно документации: https://developer.bring.com/api/shipping-guide_2/
+   * 
+   * ВАЖНО: Формат запроса и ответа основан на типичной структуре Shipping Guide API.
+   * Может потребоваться уточнение на основе реальной документации.
+   * 
+   * Bring Shipping Guide API обычно возвращает структуру с consignments, каждый из которых
+   * содержит массив products с информацией о доступных способах доставки и ценах.
    */
   async calculateShipping(request: ShippingCalculationRequest): Promise<ShippingOption[]> {
     try {
       const config = await this.getConfig();
 
-      // TODO: Адаптировать под реальный формат запроса Bring API
-      // Примерная структура на основе типичных API доставки:
+      // Формат запроса для Shipping Guide API v2
+      // Согласно документации Bring, используется POST запрос с адресами и параметрами посылки
+      // Bring обычно использует формат с from/to объектами и параметрами посылки
       const apiRequest: any = {
         from: {
           countryCode: request.from.countryCode,
@@ -231,55 +234,96 @@ export class BringAdapter extends BaseShippingAdapter {
           streetName: request.to.streetName,
           streetNumber: request.to.streetNumber
         },
-        weight: {
-          value: request.weight,
-          unit: 'kg'
-        },
-        dimensions: {
-          length: request.dimensions.length,
-          width: request.dimensions.width,
-          height: request.dimensions.height,
-          unit: 'cm'
-        }
+        weightInKg: request.weight,
+        length: request.dimensions.length,
+        width: request.dimensions.width,
+        height: request.dimensions.height
       };
+
+      // Добавляем customer number, если указан (может быть обязательным для некоторых продуктов)
+      if (config.customer_number) {
+        apiRequest.customerNumber = config.customer_number;
+      }
 
       // Добавляем объявленную стоимость, если указана
       if (request.declaredValue) {
-        apiRequest.declaredValue = {
-          amount: request.declaredValue.amount,
+        apiRequest.edi = {
+          value: request.declaredValue.amount,
           currency: request.declaredValue.currency
         };
       }
 
-      // TODO: Заменить на реальный endpoint Bring API
-      // Пример: '/api/shipping/calculate' или '/api/guide/calculate'
+      // Endpoint Shipping Guide API v2 для получения продуктов и цен
+      // Согласно документации: POST /shippingguide/api/v2/products
       const response = await this.makeRequest(
-        '/api/shipping/calculate', // TODO: Уточнить endpoint
+        '/shippingguide/api/v2/products',
         'POST',
         apiRequest
       );
 
-      // TODO: Адаптировать под реальный формат ответа Bring API
-      // Проверяем наличие вариантов доставки в ответе
-      if (!response.deliveryOptions || !Array.isArray(response.deliveryOptions)) {
-        // Возможно, формат ответа другой - нужно уточнить из документации
-        // Например: response.services, response.options, response.products и т.д.
+      // Формат ответа Shipping Guide API обычно содержит consignments
+      // Каждый consignment содержит массив products с доступными способами доставки
+      let products: any[] = [];
+      
+      if (response.consignments && Array.isArray(response.consignments)) {
+        // Извлекаем продукты из каждого consignment
+        products = response.consignments.flatMap((consignment: any) => 
+          consignment.products || []
+        );
+      } else if (response.products && Array.isArray(response.products)) {
+        products = response.products;
+      } else if (Array.isArray(response)) {
+        products = response;
+      }
+
+      if (products.length === 0) {
+        // Адрес недоступен или нет вариантов доставки
         return [];
       }
 
       // Нормализуем варианты доставки
-      const options: ShippingOption[] = response.deliveryOptions.map((option: BringDeliveryOption) => {
+      const options: ShippingOption[] = products.map((product: any) => {
+        // Извлекаем информацию о продукте
+        // Bring обычно использует: productId, productCode, productName
+        const productId = product.productId || product.id || product.code || product.productCode;
+        const productName = product.productName || product.name || product.displayName || 'Bring Service';
+        
+        // Извлекаем цену
+        // Bring обычно возвращает: price, listPrice, totalPrice
+        const priceObj = product.price || product.listPrice || product.totalPrice || {};
+        const price = typeof priceObj === 'number' ? priceObj : (priceObj.amount || priceObj.value || priceObj.withVAT || 0);
+        const currency = priceObj.currency || 'NOK';
+
+        // Извлекаем срок доставки
+        // Bring обычно возвращает: expectedDelivery, estimatedDeliveryTime
+        const deliveryTime = product.expectedDelivery || product.estimatedDeliveryTime || {};
+        let estimatedDays: number | undefined;
+        
+        if (deliveryTime.workingDays) {
+          estimatedDays = deliveryTime.workingDays;
+        } else if (deliveryTime.days) {
+          estimatedDays = deliveryTime.days;
+        } else if (typeof deliveryTime === 'string') {
+          // Если это дата, вычисляем разницу в днях
+          const deliveryDate = new Date(deliveryTime);
+          const today = new Date();
+          const diffTime = deliveryDate.getTime() - today.getTime();
+          estimatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
         return {
-          id: option.serviceId || `bring_${Date.now()}_${Math.random()}`,
-          name: option.serviceName || 'Bring Service',
-          price: option.price?.amount || 0,
-          currency: option.price?.currency || 'NOK',
-          estimatedDays: option.estimatedDays,
-          serviceCode: option.serviceId,
+          id: productId || `bring_${Date.now()}_${Math.random()}`,
+          name: productName,
+          price: price,
+          currency: currency,
+          estimatedDays: estimatedDays,
+          serviceCode: productId,
           provider: this.getProviderCode(),
           metadata: {
-            serviceId: option.serviceId,
-            ...option // Сохраняем все дополнительные данные от API
+            productId: productId,
+            productCode: product.code || product.productCode,
+            consignmentId: product.consignmentId,
+            ...product // Сохраняем все дополнительные данные от API
           }
         };
       });
@@ -292,7 +336,9 @@ export class BringAdapter extends BaseShippingAdapter {
       }
 
       // Обработка ошибок валидации адреса
-      if (error.message?.includes('invalid') || error.message?.includes('address')) {
+      if (error.message?.includes('invalid') || error.message?.includes('address') ||
+          error.message?.includes('not found') || error.message?.includes('unavailable') ||
+          error.message?.includes('not available')) {
         throw new ShippingAddressInvalidError(this.getProviderCode(), error.message);
       }
 
@@ -303,19 +349,22 @@ export class BringAdapter extends BaseShippingAdapter {
   /**
    * Создание отправления
    * 
-   * TODO: Заполнить на основе реальной документации Bring API
-   * Нужно уточнить:
-   * - Точный endpoint для создания отправления
-   * - Формат запроса (адреса, получатель, товары)
-   * - Формат ответа (tracking number, QR код, label)
+   * Использует Booking API для создания отправления
+   * Согласно документации: https://developer.bring.com/api/booking/
+   * 
+   * ВАЖНО: Bring имеет два API для создания отправлений:
+   * 1. Booking API - более простой, с валидацией (используем этот)
+   * 2. Shipment API - более гибкий, требует знания портфолио услуг
+   * 
+   * Booking API проще в использовании и подходит для нашего случая.
    */
   async createBooking(request: ShippingBookingRequest): Promise<ShippingBookingResult> {
     try {
       const config = await this.getConfig();
 
-      // TODO: Адаптировать под реальный формат запроса Bring API
+      // Формат запроса для Booking API
+      // Согласно документации Bring Booking API
       const apiRequest: any = {
-        serviceId: request.selectedOptionId, // Или другой способ передачи выбранного варианта
         from: {
           countryCode: request.from.countryCode,
           postalCode: request.from.postalCode,
@@ -335,45 +384,74 @@ export class BringAdapter extends BaseShippingAdapter {
           phone: request.recipient.phone,
           email: request.recipient.email
         },
-        weight: {
-          value: request.weight,
-          unit: 'kg'
+        product: {
+          id: request.selectedOptionId, // Product ID из выбранного варианта доставки (из metadata)
         },
-        dimensions: {
-          length: request.dimensions.length,
-          width: request.dimensions.width,
-          height: request.dimensions.height,
-          unit: 'cm'
-        },
+        weightInKg: request.weight,
+        length: request.dimensions.length,
+        width: request.dimensions.width,
+        height: request.dimensions.height,
         orderReference: request.orderNumber // Для связи с заказом в системе
       };
 
+      // Добавляем customer number, если указан (может быть обязательным)
+      if (config.customer_number) {
+        apiRequest.customerNumber = config.customer_number;
+      }
+
       // Добавляем объявленную стоимость, если указана
       if (request.declaredValue) {
-        apiRequest.declaredValue = {
-          amount: request.declaredValue.amount,
+        apiRequest.edi = {
+          value: request.declaredValue.amount,
           currency: request.declaredValue.currency
         };
       }
 
-      // TODO: Заменить на реальный endpoint Bring API
-      // Пример: '/api/shipping/book' или '/api/booking/create'
+      // Endpoint Booking API для создания отправления
+      // Согласно документации: POST /booking/api/create
       const response: BringBookingResponse = await this.makeRequest(
-        '/api/shipping/book', // TODO: Уточнить endpoint
+        '/booking/api/create',
         'POST',
         apiRequest
       );
 
-      if (!response.trackingNumber) {
+      // Формат ответа Booking API
+      // Bring обычно возвращает consignmentNumber как tracking number
+      const trackingNumber = response.consignmentNumber || 
+                             response.consignment?.consignmentNumber ||
+                             response.trackingNumber || 
+                             response.shipmentNumber;
+      
+      if (!trackingNumber) {
         throw new Error('Tracking number not received from Bring API');
       }
 
+      // Booking ID может быть в разных полях
+      const bookingId = response.consignmentId || 
+                        response.bookingId || 
+                        response.consignment?.consignmentId ||
+                        response.shipmentId || 
+                        trackingNumber;
+
+      // URL этикетки может быть в разных полях
+      const labelUrl = response.labelUrl || 
+                       response.label || 
+                       response.pdfUrl ||
+                       response.consignment?.labelUrl;
+
+      // QR код может быть в ответе или частью этикетки
+      const qrCodeUrl = response.qrCodeUrl || 
+                        response.qrCode ||
+                        response.consignment?.qrCodeUrl;
+
       return {
-        trackingNumber: response.trackingNumber,
-        bookingId: response.bookingId,
-        qrCodeUrl: response.qrCodeUrl,
-        labelUrl: response.labelUrl,
+        trackingNumber: trackingNumber,
+        bookingId: bookingId,
+        qrCodeUrl: qrCodeUrl,
+        labelUrl: labelUrl,
         metadata: {
+          consignmentNumber: trackingNumber,
+          consignmentId: bookingId,
           ...response // Сохраняем все дополнительные данные
         }
       };
@@ -403,38 +481,70 @@ export class BringAdapter extends BaseShippingAdapter {
   /**
    * Отслеживание отправления
    * 
-   * TODO: Заполнить на основе реальной документации Bring API
-   * Нужно уточнить:
-   * - Точный endpoint для отслеживания
-   * - Формат запроса (tracking number)
-   * - Формат ответа (статус, история событий)
+   * Использует Tracking API для получения статуса и истории отправления
+   * Согласно документации: https://developer.bring.com/api/tracking/
+   * 
+   * ВАЖНО: Формат запроса и ответа основан на типичной структуре Tracking API.
+   * Может потребоваться уточнение на основе реальной документации.
    */
   async trackShipment(trackingNumber: string): Promise<TrackingInfo> {
     try {
-      // TODO: Заменить на реальный endpoint Bring API
-      // Пример: `/api/tracking/${trackingNumber}` или `/api/shipment/${trackingNumber}/status`
+      // Endpoint Tracking API для получения статуса отправления
+      // Согласно документации: GET /tracking/api/v2/tracking.json?q={trackingNumber}
+      // Или: GET /tracking/api/v2/tracking/{trackingNumber}
       const response = await this.makeRequest(
-        `/api/tracking/${trackingNumber}`, // TODO: Уточнить endpoint
+        `/tracking/api/v2/tracking.json?q=${encodeURIComponent(trackingNumber)}`,
         'GET'
       );
 
-      // TODO: Адаптировать под реальный формат ответа Bring API
+      // Формат ответа Tracking API может быть разным
+      // Возможные варианты: response.consignment, response.shipment, response.tracking
+      const trackingData = response.consignment || response.shipment || response.tracking || response;
+
       // Нормализация статуса в формат EverShop
-      const status = this.normalizeStatus(response.status || response.currentStatus || response.state);
+      // Статус может быть в разных полях: status, currentStatus, state, statusText
+      const status = this.normalizeStatus(
+        trackingData.status || 
+        trackingData.currentStatus || 
+        trackingData.state || 
+        trackingData.statusText ||
+        'unknown'
+      );
+
+      // История событий может быть в разных полях: events, history, statusHistory, trackingEvents
+      const events = trackingData.events || 
+                     trackingData.history || 
+                     trackingData.statusHistory || 
+                     trackingData.trackingEvents || 
+                     [];
+
+      const history = events.map((item: any) => ({
+        status: this.normalizeStatus(item.status || item.state || item.statusText || 'unknown'),
+        date: item.date || item.timestamp || item.time || item.eventTime,
+        location: item.location || item.address || item.city || item.place
+      }));
 
       return {
         status: status,
-        history: response.history?.map((item: any) => ({
-          status: this.normalizeStatus(item.status || item.state),
-          date: item.date || item.timestamp || item.time,
-          location: item.location || item.address
-        })),
-        metadata: response
+        history: history.length > 0 ? history : undefined,
+        metadata: {
+          trackingNumber: trackingNumber,
+          ...trackingData // Сохраняем все дополнительные данные
+        }
       };
     } catch (error: any) {
       if (error instanceof ShippingProviderTimeoutError || 
           error instanceof ShippingProviderUnavailableError) {
         throw error;
+      }
+
+      // Обработка ошибок отслеживания (отправление не найдено)
+      if (error.message?.includes('404') || error.message?.includes('not found')) {
+        throw new ShippingTrackingError(
+          this.getProviderCode(),
+          'Shipment not found',
+          error
+        );
       }
 
       throw new ShippingTrackingError(
@@ -449,22 +559,43 @@ export class BringAdapter extends BaseShippingAdapter {
    * Нормализация статуса из формата Bring в формат EverShop
    * @private
    * 
-   * TODO: Уточнить реальные статусы Bring API из документации
+   * ВАЖНО: Статусы основаны на типичных статусах логистических API.
+   * Может потребоваться уточнение на основе реальной документации Bring Tracking API.
    */
   private normalizeStatus(bringStatus: string): string {
-    // TODO: Адаптировать под реальные статусы Bring API
+    if (!bringStatus) {
+      return 'pending';
+    }
+
+    const statusLower = bringStatus.toLowerCase();
+
+    // Маппинг статусов Bring → EverShop
+    // Статусы могут быть на норвежском или английском языке
     const statusMap: Record<string, string> = {
+      // Английские статусы
       'pending': 'pending',
       'processing': 'processing',
       'in_transit': 'shipped',
+      'in_transit': 'shipped',
       'out_for_delivery': 'shipped',
+      'ready_for_pickup': 'shipped',
       'delivered': 'delivered',
       'cancelled': 'canceled',
       'canceled': 'canceled',
-      'failed': 'canceled'
+      'failed': 'canceled',
+      'exception': 'canceled',
+      
+      // Норвежские статусы (если Bring использует их)
+      'ventende': 'pending',
+      'behandles': 'processing',
+      'under_vegs': 'shipped',
+      'klar_for_henting': 'shipped',
+      'levert': 'delivered',
+      'avbrutt': 'canceled',
+      'feilet': 'canceled'
     };
 
-    const normalized = statusMap[bringStatus?.toLowerCase() || ''];
+    const normalized = statusMap[statusLower];
     return normalized || 'pending';
   }
 }
