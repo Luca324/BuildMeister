@@ -12,7 +12,10 @@
 
 // @ts-ignore - EverShop resolves these modules at runtime
 import { addProcessor } from '@evershop/evershop/lib/util/registry';
-import { PostNordAdapter } from './adapters/PostNordAdapter.js';
+// Адаптеры провайдеров (не подключаем PostNord и Helthjem по требованию)
+// import { PostNordAdapter } from './adapters/PostNordAdapter.js';
+// import { HelthjemAdapter } from './adapters/HelthjemAdapter.js';
+import { BringAdapter } from './adapters/BringAdapter.js';
 import { ShippingProviderService } from './services/ShippingProviderService.js';
 import shippingOrderProcessor from './services/ShippingOrderProcessor.js';
 import shippingCalculationProcessor from './services/ShippingCalculationProcessor.js';
@@ -24,9 +27,12 @@ export default () => {
 
   // Регистрируем адаптеры провайдеров доставки
   // Каждый адаптер реализует интерфейс BaseShippingAdapter
-  shippingService.registerAdapter(new PostNordAdapter());
-  // В будущем можно добавить:
+  // PostNord и Helthjem не подключаем по требованию (файлы оставляем на будущее)
+  // shippingService.registerAdapter(new PostNordAdapter());
   // shippingService.registerAdapter(new HelthjemAdapter());
+  
+  // Регистрируем Bring адаптер
+  shippingService.registerAdapter(new BringAdapter());
 
   /**
    * Регистрация процессора расчета стоимости доставки
