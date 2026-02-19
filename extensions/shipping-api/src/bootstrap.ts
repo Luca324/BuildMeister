@@ -15,6 +15,7 @@ import { addProcessor } from '@evershop/evershop/lib/util/registry';
 import { PostNordAdapter } from './adapters/PostNordAdapter.js';
 import { ShippingProviderService } from './services/ShippingProviderService.js';
 import shippingOrderProcessor from './services/ShippingOrderProcessor.js';
+import shippingCalculationProcessor from './services/ShippingCalculationProcessor.js';
 
 export default () => {
   // Создаем экземпляр сервиса (singleton)
@@ -26,6 +27,22 @@ export default () => {
   shippingService.registerAdapter(new PostNordAdapter());
   // В будущем можно добавить:
   // shippingService.registerAdapter(new HelthjemAdapter());
+
+  /**
+   * Регистрация процессора расчета стоимости доставки
+   * 
+   * Этот процессор добавляет динамические варианты доставки от API провайдеров
+   * в стандартный список методов доставки EverShop.
+   * 
+   * @param cart - объект корзины
+   * @param methods - массив существующих методов доставки
+   * @param context - контекст выполнения
+   * @returns массив методов доставки с добавленными динамическими вариантами
+   */
+  // @ts-ignore - EverShop resolves processor signature at runtime
+  addProcessor('cartCalculateShipping', async (cart: any, methods: any[], context: any) => {
+    return await shippingCalculationProcessor(cart, methods, context);
+  }, 100);
 
   /**
    * Регистрация процессора создания отправления после оплаты заказа

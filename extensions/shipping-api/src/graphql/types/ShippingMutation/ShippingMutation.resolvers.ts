@@ -144,6 +144,7 @@ export default {
       const connection: any = pool || await getConnection();
 
       // Парсим shippingMethod
+      // Может быть как строка JSON, так и объект
       let methodData: any;
       try {
         methodData = typeof shippingMethod === 'string' 
@@ -163,13 +164,33 @@ export default {
         throw new Error('Cart not found');
       }
 
+      // Определяем стоимость доставки
+      // Может быть в разных полях: cost, costInclTax, price
+      const shippingFee = methodData.costInclTax || methodData.cost || methodData.price || 0;
+
+      // Определяем название метода
+      const methodName = methodData.name || methodData.provider || 'Shipping';
+
+      // Сохраняем полный объект метода в shipping_method для сохранения метаданных
+      // Это важно для последующего создания отправления через API провайдера
+      const methodToSave = {
+        id: methodData.id || methodData.method_id,
+        name: methodName,
+        cost: shippingFee,
+        costExclTax: methodData.costExclTax || shippingFee,
+        costInclTax: shippingFee,
+        price: shippingFee,
+        provider: methodData.provider,
+        metadata: methodData.metadata || {}
+      };
+
       // Обновляем метод доставки и стоимость в корзине
       await update('cart')
         .given({
-          shipping_method: JSON.stringify(methodData),
-          shipping_method_name: methodData.name || methodData.provider,
-          shipping_fee_excl_tax: methodData.price || 0,
-          shipping_fee_incl_tax: methodData.price || 0,
+          shipping_method: JSON.stringify(methodToSave),
+          shipping_method_name: methodName,
+          shipping_fee_excl_tax: methodToSave.costExclTax,
+          shipping_fee_incl_tax: shippingFee,
           updated_at: new Date()
         })
         .where('cart_id', '=', cartId)
