@@ -198,15 +198,48 @@ export class BringAdapter extends BaseShippingAdapter {
     }
 
     try {
+      console.log('[SHIPPING-API] BringAdapter.makeRequest отправка запроса:', {
+        url,
+        method,
+        headers: Object.keys(headers),
+        hasBody: !!body
+      });
+
       const response = await fetch(url, options);
+
+      console.log('[SHIPPING-API] BringAdapter.makeRequest получен ответ:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[SHIPPING-API] BringAdapter.makeRequest ошибка API:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        });
         throw new Error(`Bring API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
-      return await response.json();
+      const responseData = await response.json();
+      console.log('[SHIPPING-API] BringAdapter.makeRequest успешно:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        responseSize: JSON.stringify(responseData).length
+      });
+      return responseData;
     } catch (error: any) {
+      console.error('[SHIPPING-API] BringAdapter.makeRequest ОШИБКА:', {
+        url,
+        method,
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+
       if (error.name === 'TimeoutError' || error.name === 'AbortError') {
         throw new ShippingProviderTimeoutError(this.getProviderCode());
       }
@@ -234,8 +267,17 @@ export class BringAdapter extends BaseShippingAdapter {
    * - withGuiInformation: true для получения названий и описаний
    */
   async calculateShipping(request: ShippingCalculationRequest): Promise<ShippingOption[]> {
+    console.log('[SHIPPING-API] BringAdapter.calculateShipping вызван');
     try {
       const config = await this.getConfig();
+      console.log('[SHIPPING-API] BringAdapter конфигурация загружена:', {
+        enabled: config.enabled,
+        hasApiKey: !!config.api_key,
+        hasApiUid: !!config.api_uid,
+        hasClientUrl: !!config.client_url,
+        hasCustomerNumber: !!config.customer_number,
+        testMode: config.test_mode
+      });
 
       // Формат запроса для Shipping Guide API v2 согласно OpenAPI спецификации
       // Вес указывается в граммах в массиве packages
@@ -288,11 +330,21 @@ export class BringAdapter extends BaseShippingAdapter {
       }
 
       // Endpoint Shipping Guide API v2
+      console.log('[SHIPPING-API] BringAdapter запрос к API:', {
+        endpoint: '/shippingguide/api/v2/products',
+        requestBody: JSON.stringify(apiRequest, null, 2)
+      });
+      
       const response = await this.makeRequest(
         '/shippingguide/api/v2/products',
         'POST',
         apiRequest
       );
+
+      console.log('[SHIPPING-API] BringAdapter ответ от API получен:', {
+        hasConsignments: !!response.consignments,
+        consignmentsCount: response.consignments?.length || 0
+      });
 
       // Формат ответа согласно OpenAPI спецификации:
       // response.consignments[].products[] - массив продуктов с ценами и сроками
@@ -313,8 +365,12 @@ export class BringAdapter extends BaseShippingAdapter {
 
       if (products.length === 0) {
         // Адрес недоступен или нет вариантов доставки
+        console.log('[SHIPPING-API] BringAdapter: нет доступных продуктов в ответе');
+        console.log('[SHIPPING-API] BringAdapter: полный ответ API:', JSON.stringify(response, null, 2));
         return [];
       }
+
+      console.log('[SHIPPING-API] BringAdapter: найдено продуктов:', products.length);
 
       // Нормализуем варианты доставки
       const options: ShippingOption[] = products.map((product: any) => {
@@ -373,8 +429,25 @@ export class BringAdapter extends BaseShippingAdapter {
         };
       });
 
+      console.log('[SHIPPING-API] BringAdapter: нормализовано вариантов:', options.length);
+      console.log('[SHIPPING-API] BringAdapter: варианты:', options.map(o => ({
+        id: o.id,
+        name: o.name,
+        price: o.price,
+        currency: o.currency,
+        estimatedDays: o.estimatedDays
+      })));
+
       return options;
     } catch (error: any) {
+      console.error('[SHIPPING-API] BringAdapter.calculateShipping ОШИБКА:', {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack,
+        isTimeout: error instanceof ShippingProviderTimeoutError,
+        isUnavailable: error instanceof ShippingProviderUnavailableError
+      });
+
       if (error instanceof ShippingProviderTimeoutError || 
           error instanceof ShippingProviderUnavailableError) {
         throw error;

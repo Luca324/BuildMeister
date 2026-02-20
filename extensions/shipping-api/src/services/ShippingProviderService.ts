@@ -59,6 +59,9 @@ export class ShippingProviderService {
    * Получение списка активных провайдеров из конфигурации
    */
   private async getActiveProviders(): Promise<BaseShippingAdapter[]> {
+    console.log('[SHIPPING-API] getActiveProviders: начало');
+    console.log('[SHIPPING-API] Зарегистрированные адаптеры:', Array.from(this.adapters.keys()));
+    
     // @ts-ignore - EverShop resolves these modules at runtime
     const { select } = await import('@evershop/postgres-query-builder');
     // @ts-ignore
@@ -73,6 +76,7 @@ export class ShippingProviderService {
               .load(connection);
 
     if (!setting) {
+      console.log('[SHIPPING-API] getActiveProviders: конфигурация не найдена');
       return [];
     }
 
@@ -88,15 +92,27 @@ export class ShippingProviderService {
     }
 
     const providers = configData?.providers || {};
+    console.log('[SHIPPING-API] Провайдеры в конфигурации:', Object.keys(providers));
+    
     const activeAdapters: BaseShippingAdapter[] = [];
 
     for (const [code, config] of Object.entries(providers)) {
       const providerConfig = config as any;
-      if (providerConfig.enabled && this.adapters.has(code)) {
+      const isEnabled = providerConfig.enabled;
+      const isRegistered = this.adapters.has(code);
+      
+      console.log(`[SHIPPING-API] Провайдер ${code}:`, {
+        enabled: isEnabled,
+        registered: isRegistered,
+        willBeActive: isEnabled && isRegistered
+      });
+      
+      if (isEnabled && isRegistered) {
         activeAdapters.push(this.adapters.get(code)!);
       }
     }
 
+    console.log('[SHIPPING-API] getActiveProviders: найдено активных адаптеров:', activeAdapters.length);
     return activeAdapters;
   }
 
@@ -125,11 +141,15 @@ export class ShippingProviderService {
    * - Если 3 провайдера по 2 секунды каждый, общее время = ~2 секунды, а не 6
    */
   async calculateAll(request: ShippingCalculationRequest): Promise<ProviderResult[]> {
+    console.log('[SHIPPING-API] ShippingProviderService.calculateAll вызван');
     const activeAdapters = await this.getActiveProviders();
 
     if (activeAdapters.length === 0) {
+      console.log('[SHIPPING-API] calculateAll: нет активных адаптеров');
       return [];
     }
+
+    console.log('[SHIPPING-API] calculateAll: запрос к', activeAdapters.length, 'провайдерам');
 
     /**
      * Promise.allSettled vs Promise.all:
@@ -144,9 +164,12 @@ export class ShippingProviderService {
     const results = await Promise.allSettled(
       activeAdapters.map(async (adapter) => {
         try {
+          const providerCode = adapter.getProviderCode();
+          console.log(`[SHIPPING-API] Запрос к провайдеру ${providerCode}...`);
           const options = await adapter.calculateShipping(request);
+          console.log(`[SHIPPING-API] Провайдер ${providerCode} вернул ${options.length} вариантов`);
           return {
-            provider: adapter.getProviderCode(),
+            provider: providerCode,
             providerName: adapter.getProviderName(),
             options,
             error: undefined
@@ -154,8 +177,13 @@ export class ShippingProviderService {
         } catch (error: any) {
           // Ошибка конкретного провайдера не должна блокировать остальные
           // Возвращаем результат с ошибкой для отображения пользователю
+          const providerCode = adapter.getProviderCode();
+          console.error(`[SHIPPING-API] ОШИБКА провайдера ${providerCode}:`, {
+            message: error.message,
+            stack: error.stack
+          });
           return {
-            provider: adapter.getProviderCode(),
+            provider: providerCode,
             providerName: adapter.getProviderName(),
             options: [],
             error: error.message || 'Unknown error'
@@ -166,7 +194,7 @@ export class ShippingProviderService {
 
     // Преобразуем результаты Promise.allSettled в массив ProviderResult
     // Promise.allSettled возвращает массив { status: 'fulfilled'|'rejected', value|reason }
-    return results.map((result, index) => {
+    const finalResults = results.map((result, index) => {
       if (result.status === 'fulfilled') {
         // Запрос успешно выполнен
         return result.value;
@@ -174,6 +202,7 @@ export class ShippingProviderService {
         // Запрос упал с ошибкой (не должно происходить, т.к. мы ловим ошибки в try-catch)
         // Но на всякий случай обрабатываем этот случай
         const adapter = activeAdapters[index];
+        console.error(`[SHIPPING-API] Promise.allSettled rejected для провайдера ${adapter.getProviderCode()}:`, result.reason);
         return {
           provider: adapter.getProviderCode(),
           providerName: adapter.getProviderName(),
@@ -182,6 +211,14 @@ export class ShippingProviderService {
         };
       }
     });
+
+    console.log('[SHIPPING-API] calculateAll завершен, итоговые результаты:', finalResults.map(r => ({
+      provider: r.provider,
+      optionsCount: r.options.length,
+      error: r.error
+    })));
+
+    return finalResults;
   }
 
   /**

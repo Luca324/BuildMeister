@@ -21,6 +21,8 @@ import shippingOrderProcessor from './services/ShippingOrderProcessor.js';
 import shippingCalculationProcessor from './services/ShippingCalculationProcessor.js';
 
 export default () => {
+  console.log('[SHIPPING-API] Bootstrap: инициализация расширения shipping-api');
+  
   // Создаем экземпляр сервиса (singleton)
   // Singleton гарантирует, что все части расширения используют один и тот же экземпляр
   const shippingService = ShippingProviderService.getInstance();
@@ -32,7 +34,9 @@ export default () => {
   // shippingService.registerAdapter(new HelthjemAdapter());
   
   // Регистрируем Bring адаптер
-  shippingService.registerAdapter(new BringAdapter());
+  const bringAdapter = new BringAdapter();
+  shippingService.registerAdapter(bringAdapter);
+  console.log('[SHIPPING-API] Bootstrap: BringAdapter зарегистрирован, код:', bringAdapter.getProviderCode());
 
   /**
    * Регистрация процессора расчета стоимости доставки
@@ -47,8 +51,11 @@ export default () => {
    */
   // @ts-ignore - EverShop resolves processor signature at runtime
   addProcessor('cartCalculateShipping', async (cart: any, methods: any[], context: any) => {
+    console.log('[SHIPPING-API] Bootstrap: процессор cartCalculateShipping зарегистрирован');
     return await shippingCalculationProcessor(cart, methods, context);
   }, 100);
+  
+  console.log('[SHIPPING-API] Bootstrap: инициализация завершена');
 
   /**
    * Регистрация процессора создания отправления после оплаты заказа

@@ -27,9 +27,16 @@ export default async function shippingCalculationProcessor(
   methods: any[],
   context: any
 ): Promise<any[]> {
+  console.log('[SHIPPING-API] ShippingCalculationProcessor вызван', {
+    cartId: cart?.cart_id,
+    shippingAddressId: cart?.shipping_address_id,
+    existingMethodsCount: methods?.length || 0
+  });
+
   // Проверяем, заполнен ли адрес доставки
   if (!cart.shipping_address_id) {
     // Если адрес не заполнен, возвращаем стандартные методы без изменений
+    console.log('[SHIPPING-API] Ранний выход: shipping_address_id отсутствует');
     return methods;
   }
 
@@ -45,12 +52,26 @@ export default async function shippingCalculationProcessor(
       .load(connection);
 
     if (!shippingAddress) {
+      console.log('[SHIPPING-API] Ранний выход: адрес доставки не найден в БД');
       return methods;
     }
+
+    console.log('[SHIPPING-API] Адрес доставки загружен:', {
+      postcode: shippingAddress.postcode,
+      city: shippingAddress.city,
+      address_1: shippingAddress.address_1,
+      country: shippingAddress.country
+    });
 
     // Проверяем, что адрес заполнен полностью
     if (!shippingAddress.postcode || !shippingAddress.city || 
         !shippingAddress.address_1 || !shippingAddress.country) {
+      console.log('[SHIPPING-API] Ранний выход: адрес заполнен не полностью', {
+        hasPostcode: !!shippingAddress.postcode,
+        hasCity: !!shippingAddress.city,
+        hasAddress1: !!shippingAddress.address_1,
+        hasCountry: !!shippingAddress.country
+      });
       return methods;
     }
 
@@ -61,8 +82,11 @@ export default async function shippingCalculationProcessor(
       .execute(connection);
 
     if (!cartItems || cartItems.length === 0) {
+      console.log('[SHIPPING-API] Ранний выход: нет товаров в корзине');
       return methods;
     }
+
+    console.log('[SHIPPING-API] Товары в корзине:', cartItems.length);
 
     // Рассчитываем общий вес и габариты
     let totalWeight = 0;
@@ -94,6 +118,11 @@ export default async function shippingCalculationProcessor(
       }
     }
 
+    console.log('[SHIPPING-API] Рассчитаны вес и габариты:', {
+      totalWeight: totalWeight,
+      dimensions: { length: maxLength, width: maxWidth, height: maxHeight }
+    });
+
     // Получаем адрес отправителя из конфигурации
     const { select: selectSetting } = await import('@evershop/postgres-query-builder');
     const setting = await selectSetting()
@@ -102,6 +131,7 @@ export default async function shippingCalculationProcessor(
       .load(connection);
 
     if (!setting) {
+      console.log('[SHIPPING-API] Ранний выход: конфигурация shipping_api не найдена в БД');
       return methods;
     }
 
@@ -118,19 +148,30 @@ export default async function shippingCalculationProcessor(
 
     // Получаем первый активный провайдер для адреса отправителя
     const providers = configData?.providers || {};
+    console.log('[SHIPPING-API] Провайдеры в конфигурации:', Object.keys(providers));
+    
     let senderAddress: any = null;
+    let foundProviderCode: string | null = null;
 
     for (const [code, config] of Object.entries(providers)) {
       const providerConfig = config as any;
+      console.log(`[SHIPPING-API] Проверка провайдера ${code}:`, {
+        enabled: providerConfig.enabled,
+        hasFromAddress: !!providerConfig.from_address
+      });
       if (providerConfig.enabled && providerConfig.from_address) {
         senderAddress = providerConfig.from_address;
+        foundProviderCode = code;
         break;
       }
     }
 
     if (!senderAddress) {
+      console.log('[SHIPPING-API] Ранний выход: не найден активный провайдер с from_address');
       return methods;
     }
+
+    console.log('[SHIPPING-API] Найден провайдер с адресом отправителя:', foundProviderCode, senderAddress);
 
     // Преобразуем адреса в формат для API
     const fromAddress = AddressMapper.toStandardFormat(senderAddress);
@@ -156,8 +197,15 @@ export default async function shippingCalculationProcessor(
     };
 
     // Получаем варианты от всех активных провайдеров
+    console.log('[SHIPPING-API] Запрос к провайдерам:', calculationRequest);
     const shippingService = ShippingProviderService.getInstance();
     const providerResults = await shippingService.calculateAll(calculationRequest);
+    console.log('[SHIPPING-API] Результаты от провайдеров:', providerResults.map(r => ({
+      provider: r.provider,
+      providerName: r.providerName,
+      optionsCount: r.options.length,
+      error: r.error
+    })));
 
     // Преобразуем варианты от провайдеров в формат методов доставки EverShop
     const dynamicMethods: any[] = [];
@@ -165,6 +213,7 @@ export default async function shippingCalculationProcessor(
     for (const providerResult of providerResults) {
       // Если у провайдера есть ошибка, пропускаем его
       if (providerResult.error) {
+        console.log(`[SHIPPING-API] Пропуск провайдера ${providerResult.provider} из-за ошибки:`, providerResult.error);
         continue;
       }
 
@@ -207,12 +256,22 @@ export default async function shippingCalculationProcessor(
 
     // Объединяем стандартные методы с динамическими
     // Динамические методы добавляются в конец списка
+    console.log('[SHIPPING-API] Итоговый результат:', {
+      staticMethodsCount: methods.length,
+      dynamicMethodsCount: dynamicMethods.length,
+      totalMethodsCount: methods.length + dynamicMethods.length,
+      dynamicMethods: dynamicMethods.map(m => ({ id: m.id, name: m.name, price: m.price }))
+    });
     return [...methods, ...dynamicMethods];
 
   } catch (error: any) {
     // В случае ошибки возвращаем стандартные методы без изменений
     // Логируем ошибку для отладки
-    console.error('Error in shippingCalculationProcessor:', error);
+    console.error('[SHIPPING-API] ОШИБКА в shippingCalculationProcessor:', {
+      message: error.message,
+      stack: error.stack,
+      error: error
+    });
     return methods;
   }
 }

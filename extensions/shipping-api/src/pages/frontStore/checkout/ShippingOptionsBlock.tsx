@@ -394,10 +394,12 @@ ShippingOptionsBlock.propTypes = {
  * - Компонент будет отображаться только если cart и shippingAddress существуют
  * - Если адрес не заполнен, компонент возвращает null (не отображается)
  */
-export const layout = {
-  areaId: 'checkoutShippingAddressForm',
-  sortOrder: 100
-};
+
+// закомментируем, чтобы 
+// export const layout = {
+//   areaId: 'checkoutShippingAddressForm',
+//   sortOrder: 100
+// };
 
 export const query = `
   query Query($cartId: String) {
