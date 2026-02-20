@@ -77,14 +77,35 @@ if [ -z "${DB_PASSWORD}" ]; then
     exit 1
 fi
 
-# Проверяем наличие пути к файлу дампа
+# Если путь к файлу не указан, ищем новейший бэкап
 if [ -z "${BACKUP_FILE}" ]; then
-    echo "❌ Укажите путь к файлу дампа"
-    echo "Использование:"
-    echo "  $0 <путь_к_файлу.dump>              # Docker режим (по умолчанию)"
-    echo "  $0 local <путь_к_файлу.dump>        # Локальный режим"
-    echo "  $0 --local <путь_к_файлу.dump>      # Локальный режим (альтернативный синтаксис)"
-    exit 1
+    # Определяем директорию с бэкапами (по умолчанию backups в корне проекта)
+    BACKUP_DIR="${PROJECT_ROOT}/backups"
+    
+    # Ищем новейший файл бэкапа
+    if [ -d "${BACKUP_DIR}" ]; then
+        # Сортируем файлы по времени модификации (новейший первый) и берем первый
+        LATEST_BACKUP=$(ls -t "${BACKUP_DIR}"/backup_*.dump 2>/dev/null | head -n 1)
+        
+        if [ -n "${LATEST_BACKUP}" ]; then
+            BACKUP_FILE="${LATEST_BACKUP}"
+            echo "🔍 Автоматически выбран новейший бэкап: ${BACKUP_FILE}"
+        else
+            echo "❌ ОШИБКА: Файлы бэкапов не найдены в директории: ${BACKUP_DIR}"
+            echo "Использование:"
+            echo "  $0 [local|--local] [<путь_к_файлу.dump>]"
+            echo ""
+            echo "  Если путь не указан, будет использован новейший файл из ${BACKUP_DIR}"
+            exit 1
+        fi
+    else
+        echo "❌ ОШИБКА: Директория с бэкапами не найдена: ${BACKUP_DIR}"
+        echo "Использование:"
+        echo "  $0 [local|--local] [<путь_к_файлу.dump>]"
+        echo ""
+        echo "  Если путь не указан, будет использован новейший файл из ${BACKUP_DIR}"
+        exit 1
+    fi
 fi
 
 if [ ! -f "${BACKUP_FILE}" ]; then
