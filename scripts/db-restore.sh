@@ -2,7 +2,7 @@
 set -e
 
 # Определяем корневую директорию проекта
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
 # Определяем режим работы: local или docker (по умолчанию)
@@ -29,7 +29,17 @@ if [ "${MODE}" = "local" ]; then
         exit 1
     fi
     echo "📋 Локальный режим: загрузка переменных из ${ENV_FILE}"
-    export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
+    # Безопасная загрузка переменных: удаляем комментарии и пустые строки, экспортируем построчно
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Пропускаем пустые строки и строки, начинающиеся с #
+        case "$line" in
+            ''|\#*) continue ;;
+        esac
+        # Удаляем пробелы в начале и конце строки
+        line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # Экспортируем переменную, если строка не пустая после обработки
+        [ -n "$line" ] && export "$line" 2>/dev/null || true
+    done < "${ENV_FILE}"
 else
     # Docker режим: переменные уже должны быть в окружении
     echo "🐳 Docker режим: использование переменных из окружения"
