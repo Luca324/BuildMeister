@@ -1,41 +1,120 @@
 #!/bin/sh
 set -e
 
-# Определяем корневую директорию проекта
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "${SCRIPT_ROOT}/.." && pwd )"
+# Парсим аргументы сначала, чтобы знать режим работы
+MODE="docker"
+BACKUP_FILE=""
+if [ "$1" = "local" ]; then
+    MODE="local"
+    BACKUP_FILE="${2}"
+elif [ "$1" = "--local" ]; then
+    MODE="local"
+    BACKUP_FILE="${2}"
+else
+    BACKUP_FILE="${1}"
+fi
 
-export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
+# Определяем корневую директорию проекта в зависимости от режима
+if [ "${MODE}" = "local" ]; then
+    # Локальный режим: используем $0 (работает в sh)
+    SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+else
+    # Docker режим: используем BASH_SOURCE если доступен
+    if [ -n "${BASH_VERSION:-}" ]; then
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    else
+        SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+    fi
+fi
+PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
+
+# Загружаем переменные окружения в зависимости от режима
+if [ "${MODE}" = "local" ]; then
+    # Локальный режим: загружаем из .env файла
+    ENV_FILE="${PROJECT_ROOT}/.env"
+    if [ ! -f "${ENV_FILE}" ]; then
+        echo "❌ ОШИБКА: Файл .env не найден: ${ENV_FILE}"
+        exit 1
+    fi
+    echo "📋 Локальный режим: загрузка переменных из ${ENV_FILE}"
+    # Простая загрузка переменных из .env файла (игнорируем комментарии)
+    export $(cat "${ENV_FILE}" | grep -v '^#' | xargs)
+else
+    # Docker режим: переменные уже должны быть в окружении
+    echo "🐳 Docker режим: использование переменных из окружения"
+fi
 
 # Проверяем наличие обязательных переменных
 if [ -z "${DB_HOST}" ]; then
-    echo "❌ ОШИБКА: DB_HOST не определена в .env файле"
+    if [ "${MODE}" = "local" ]; then
+        echo "❌ ОШИБКА: DB_HOST не определена в .env файле"
+    else
+        echo "❌ ОШИБКА: DB_HOST не определена в переменных окружения"
+    fi
     exit 1
 fi
 if [ -z "${DB_PORT}" ]; then
-    echo "❌ ОШИБКА: DB_PORT не определена в .env файле"
+    if [ "${MODE}" = "local" ]; then
+        echo "❌ ОШИБКА: DB_PORT не определена в .env файле"
+    else
+        echo "❌ ОШИБКА: DB_PORT не определена в переменных окружения"
+    fi
     exit 1
 fi
 if [ -z "${DB_NAME}" ]; then
-    echo "❌ ОШИБКА: DB_NAME не определена в .env файле"
+    if [ "${MODE}" = "local" ]; then
+        echo "❌ ОШИБКА: DB_NAME не определена в .env файле"
+    else
+        echo "❌ ОШИБКА: DB_NAME не определена в переменных окружения"
+    fi
     exit 1
 fi
 if [ -z "${DB_USER}" ]; then
-    echo "❌ ОШИБКА: DB_USER не определена в .env файле"
+    if [ "${MODE}" = "local" ]; then
+        echo "❌ ОШИБКА: DB_USER не определена в .env файле"
+    else
+        echo "❌ ОШИБКА: DB_USER не определена в переменных окружения"
+    fi
     exit 1
 fi
 if [ -z "${DB_PASSWORD}" ]; then
-    echo "❌ ОШИБКА: DB_PASSWORD не определена в .env файле"
+    if [ "${MODE}" = "local" ]; then
+        echo "❌ ОШИБКА: DB_PASSWORD не определена в .env файле"
+    else
+        echo "❌ ОШИБКА: DB_PASSWORD не определена в переменных окружения"
+    fi
     exit 1
 fi
 
-# Путь к файлу дампа
-BACKUP_FILE="${1}"
-
+# Если путь к файлу не указан, ищем новейший бэкап
 if [ -z "${BACKUP_FILE}" ]; then
-    echo "❌ Укажите путь к файлу дампа"
-    echo "Использование: $0 <путь_к_файлу.dump>"
-    exit 1
+    # Определяем директорию с бэкапами (по умолчанию backups в корне проекта)
+    BACKUP_DIR="${PROJECT_ROOT}/backups"
+    
+    # Ищем новейший файл бэкапа
+    if [ -d "${BACKUP_DIR}" ]; then
+        # Сортируем файлы по времени модификации (новейший первый) и берем первый
+        LATEST_BACKUP=$(ls -t "${BACKUP_DIR}"/backup_*.dump 2>/dev/null | head -n 1)
+        
+        if [ -n "${LATEST_BACKUP}" ]; then
+            BACKUP_FILE="${LATEST_BACKUP}"
+            echo "🔍 Автоматически выбран новейший бэкап: ${BACKUP_FILE}"
+        else
+            echo "❌ ОШИБКА: Файлы бэкапов не найдены в директории: ${BACKUP_DIR}"
+            echo "Использование:"
+            echo "  $0 [local|--local] [<путь_к_файлу.dump>]"
+            echo ""
+            echo "  Если путь не указан, будет использован новейший файл из ${BACKUP_DIR}"
+            exit 1
+        fi
+    else
+        echo "❌ ОШИБКА: Директория с бэкапами не найдена: ${BACKUP_DIR}"
+        echo "Использование:"
+        echo "  $0 [local|--local] [<путь_к_файлу.dump>]"
+        echo ""
+        echo "  Если путь не указан, будет использован новейший файл из ${BACKUP_DIR}"
+        exit 1
+    fi
 fi
 
 if [ ! -f "${BACKUP_FILE}" ]; then
