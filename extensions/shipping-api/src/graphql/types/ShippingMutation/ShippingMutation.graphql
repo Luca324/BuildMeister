@@ -1,9 +1,12 @@
 # Расширяем тип Mutation мутациями доставки
+# Адрес передаём как JSON, чтобы избежать конфликта типов при мерже схем (input vs type).
 extend type Mutation {
   """
-  Расчет стоимости доставки от всех активных провайдеров
+  Расчет стоимости доставки от всех активных провайдеров.
+  Если передан address — используется он (адрес из формы); иначе берётся адрес из корзины.
+  address: { postcode, city, address1, country, fullName?, telephone?, province? }
   """
-  calculateShipping(cartId: ID!): [ShippingProviderOptions!]!
+  calculateShipping(cartId: ID!, address: JSON): [ShippingProviderOptions!]!
   
   """
   Обновление метода доставки в корзине

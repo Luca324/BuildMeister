@@ -92,3 +92,52 @@ export function toProviderFormat(address: EverShopAddress): Address {
   };
 }
 
+/**
+ * Преобразование адреса из формата провайдера в стандартный формат для API
+ * 
+ * Используется для преобразования адреса отправителя из конфигурации
+ * в формат, который ожидают адаптеры провайдеров.
+ * 
+ * @param address Адрес в формате конфигурации (может быть в разных форматах)
+ * @returns Адрес в стандартном формате для API
+ */
+export function toStandardFormat(address: any): Address {
+  // Если адрес уже в правильном формате, возвращаем как есть
+  if (address.countryCode && address.postalCode && address.city) {
+    return {
+      countryCode: address.countryCode,
+      postalCode: address.postalCode,
+      city: address.city,
+      streetName: address.streetName || address.street_name || '',
+      streetNumber: address.streetNumber || address.street_number || ''
+    };
+  }
+
+  // Если адрес в формате EverShop (cart_address / order_address)
+  if (address.address_1 || address.postcode) {
+    return toProviderFormat(address as EverShopAddress);
+  }
+
+  // Если адрес в формате конфигурации провайдера
+  return {
+    countryCode: address.countryCode || address.country?.toUpperCase() || 'NO',
+    postalCode: address.postalCode || address.postcode || '',
+    city: address.city || address.postalName || '',
+    streetName: address.streetName || address.street_name || '',
+    streetNumber: address.streetNumber || address.street_number || ''
+  };
+}
+
+/**
+ * Класс AddressMapper для удобного использования
+ */
+export class AddressMapper {
+  static toProviderFormat(address: EverShopAddress): Address {
+    return toProviderFormat(address);
+  }
+
+  static toStandardFormat(address: any): Address {
+    return toStandardFormat(address);
+  }
+}
+

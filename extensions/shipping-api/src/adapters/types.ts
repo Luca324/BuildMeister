@@ -45,6 +45,7 @@ export interface ShippingBookingRequest extends ShippingCalculationRequest {
     phone: string;
     email?: string;
   };
+  goodsDescription?: string; // Описание товара для таможенных деклараций и этикеток
 }
 
 export interface ShippingBookingResult {

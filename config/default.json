@@ -284,15 +284,15 @@
       }
     },
     "carriers": {
-      "postnord": {
+      "Postnord": {
         "name": "Postnord",
         "trackingUrl": "https://my.postnord.no/tracking/{trackingNumber}"
       },
-      "helthjem": {
+      "Helthjem": {
         "name": "Helthjem",
         "trackingUrl": "https://www.helthjem.no/sporing/{trackingNumber}"
       },
-      "bring": {
+      "Bring": {
         "name": "Bring",
         "trackingUrl": "https://sporing.bring.no/sporing/{trackingNumber}"
       }

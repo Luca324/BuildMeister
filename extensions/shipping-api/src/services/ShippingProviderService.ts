@@ -144,9 +144,10 @@ export class ShippingProviderService {
     const results = await Promise.allSettled(
       activeAdapters.map(async (adapter) => {
         try {
+          const providerCode = adapter.getProviderCode();
           const options = await adapter.calculateShipping(request);
           return {
-            provider: adapter.getProviderCode(),
+            provider: providerCode,
             providerName: adapter.getProviderName(),
             options,
             error: undefined
@@ -154,8 +155,13 @@ export class ShippingProviderService {
         } catch (error: any) {
           // Ошибка конкретного провайдера не должна блокировать остальные
           // Возвращаем результат с ошибкой для отображения пользователю
+          const providerCode = adapter.getProviderCode();
+          console.error(`[SHIPPING-API] ОШИБКА провайдера ${providerCode}:`, {
+            message: error.message,
+            stack: error.stack
+          });
           return {
-            provider: adapter.getProviderCode(),
+            provider: providerCode,
             providerName: adapter.getProviderName(),
             options: [],
             error: error.message || 'Unknown error'
@@ -166,7 +172,7 @@ export class ShippingProviderService {
 
     // Преобразуем результаты Promise.allSettled в массив ProviderResult
     // Promise.allSettled возвращает массив { status: 'fulfilled'|'rejected', value|reason }
-    return results.map((result, index) => {
+    const finalResults = results.map((result, index) => {
       if (result.status === 'fulfilled') {
         // Запрос успешно выполнен
         return result.value;
@@ -174,6 +180,10 @@ export class ShippingProviderService {
         // Запрос упал с ошибкой (не должно происходить, т.к. мы ловим ошибки в try-catch)
         // Но на всякий случай обрабатываем этот случай
         const adapter = activeAdapters[index];
+        console.error('[SHIPPING-API] calculateAll: провайдер rejected', {
+          provider: adapter.getProviderCode(),
+          reason: result.reason?.message
+        });
         return {
           provider: adapter.getProviderCode(),
           providerName: adapter.getProviderName(),
@@ -182,6 +192,8 @@ export class ShippingProviderService {
         };
       }
     });
+
+    return finalResults;
   }
 
   /**
