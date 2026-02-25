@@ -9,6 +9,8 @@ DB_PORT=
 DB_USER=
 DB_NAME=
 DB_PASSWORD=
+POSTGRES_PASSWORD=
+POSTGRES_HOST_AUTH_METHOD=scram-sha-256
 
 # Application Configuration
 PORT=80
@@ -18,6 +20,23 @@ GOOGLE_LOGIN_CLIENT_ID=""
 GOOGLE_LOGIN_CLIENT_SECRET=""
 GOOGLE_LOGIN_SUCCESS_REDIRECT_URL="https://buildmeister.no"
 GOOGLE_LOGIN_FAILURE_REDIRECT_URL="https://buildmeister.no/account/login"
+
+# AWS S3 Configuration для Yandex S3
+# ID ключа доступа (в интерфейсе Yandex S3)
+AWS_ACCESS_KEY_ID=  
+# Секретный ключ доступа
+AWS_SECRET_ACCESS_KEY=
+# Имя бакета
+AWS_BUCKET_NAME=    
+# Регион  
+AWS_REGION=ru-central1       
+AWS_ENDPOINT=https://storage.yandexcloud.net 
+AWS_S3_FORCE_PATH_STYLE=true
+
+# мониторинг (опционально)
+GRAFANA_ADMIN_USER=
+GRAFANA_ADMIN_PASSWORD=
+PROMETHEUS_RETENTION_TIME=30d
 ```
 
 ## Подготовка файлов
@@ -39,35 +58,32 @@ chmod 600 secrets/key.pem
 
 ## Локальный запуск
 
-### Автоматическая компиляция (рекомендуется)
+- Изменить HOST в .env
 
-Компиляция расширений и темы выполняется автоматически перед сборкой через `prebuild` hook:
-
-```bash
-npm run build  # Автоматически скомпилирует все расширения и тему перед сборкой
-npm start
+```env
+DB_HOST=localhost
 ```
+- Установить зависимости: `npm install`
+
+- Собрать приложение: `npm run build` 
+  
+  **Примечание:** Компиляция расширений и темы выполняется автоматически при `npm run build` через `prebuild` hook, поэтому убедитесь, что все зависимости установлены перед сборкой.
+
+- `npm start `
+
 Подробнее в docs/QUICKSTART.md
-
-### Ручная компиляция (опционально)
-
-Если нужно скомпилировать расширения и тему вручную:
-
-```bash
-# Компиляция всех расширений и темы
-npm run prebuild
-
-# Или по отдельности:
-cd themes/tech && npm run compile && cd ../..
-cd extensions/categories_widget && npm run compile && cd ../..
-cd extensions/order_status_display && npm run compile && cd ../..
-```
-
-**Важно:** При использовании `npm run build` ручная компиляция не требуется - она выполняется автоматически.
 
 ## Запуск в Docker
 
-- Собрать приложение: `npm install && npm run build`
+- Изменить HOST в .env
+
+```env
+DB_HOST=database
+```
+
+- Установить зависимости: `npm install`
+
+- Собрать приложение: `npm run build` 
 
   Приложение необходимо собирать до docker, т.к. докер сборку не выполняет, а лишь копирует папку `.evershop/dist` в контейнер в целях экономии времени. 
   
@@ -80,6 +96,7 @@ cd extensions/order_status_display && npm run compile && cd ../..
 - `docker compose up` (запуск контейнеров)
 
 # Работа с базой данных
+При создании контейнера restore БД выполняется автоматически. Но если понадобилось сделать это вручную:
 
 Зайти в контейнер app:
 - `docker compose exec -it app sh`
