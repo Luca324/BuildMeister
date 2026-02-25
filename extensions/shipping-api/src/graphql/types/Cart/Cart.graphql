@@ -1,0 +1,4 @@
+# План «без патча»: полный JSON выбранного варианта Bring для отображения и букинга
+extend type Cart {
+  shippingMethodMetadata: String
+}

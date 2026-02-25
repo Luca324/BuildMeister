@@ -165,7 +165,6 @@ export class ShippingProviderService {
       activeAdapters.map(async (adapter) => {
         try {
           const providerCode = adapter.getProviderCode();
-          console.log(`[SHIPPING-API] Запрос к провайдеру ${providerCode}...`);
           const options = await adapter.calculateShipping(request);
           console.log(`[SHIPPING-API] Провайдер ${providerCode} вернул ${options.length} вариантов`);
           return {
@@ -202,7 +201,10 @@ export class ShippingProviderService {
         // Запрос упал с ошибкой (не должно происходить, т.к. мы ловим ошибки в try-catch)
         // Но на всякий случай обрабатываем этот случай
         const adapter = activeAdapters[index];
-        console.error(`[SHIPPING-API] Promise.allSettled rejected для провайдера ${adapter.getProviderCode()}:`, result.reason);
+        console.error('[SHIPPING-API] calculateAll: провайдер rejected', {
+          provider: adapter.getProviderCode(),
+          reason: result.reason?.message
+        });
         return {
           provider: adapter.getProviderCode(),
           providerName: adapter.getProviderName(),
@@ -211,12 +213,6 @@ export class ShippingProviderService {
         };
       }
     });
-
-    console.log('[SHIPPING-API] calculateAll завершен, итоговые результаты:', finalResults.map(r => ({
-      provider: r.provider,
-      optionsCount: r.options.length,
-      error: r.error
-    })));
 
     return finalResults;
   }

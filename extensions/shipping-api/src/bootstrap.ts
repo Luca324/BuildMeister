@@ -12,6 +12,8 @@
 
 // @ts-ignore - EverShop resolves these modules at runtime
 import { addProcessor } from '@evershop/evershop/lib/util/registry';
+// @ts-ignore - EverShop resolves these modules at runtime
+import { hookBefore, hookAfter } from '@evershop/evershop/lib/util/hookable';
 // Адаптеры провайдеров (не подключаем PostNord и Helthjem по требованию)
 // import { PostNordAdapter } from './adapters/PostNordAdapter.js';
 // import { HelthjemAdapter } from './adapters/HelthjemAdapter.js';
@@ -20,70 +22,97 @@ import { ShippingProviderService } from './services/ShippingProviderService.js';
 import shippingOrderProcessor from './services/ShippingOrderProcessor.js';
 import shippingCalculationProcessor from './services/ShippingCalculationProcessor.js';
 
+const debugOrderValidationRule = {
+  id: 'shippingApiDebugLog',
+  func: (cart: any) => {
+    try {
+      console.log('[SHIPPING-API] OrderValidator: состояние корзины перед createOrder', {
+        cartId: cart.getData('cart_id'),
+        uuid: cart.getData('uuid'),
+        shipping_method: cart.getData('shipping_method'),
+        shipping_address_id: cart.getData('shipping_address_id')
+      });
+    } catch {
+      // ignore logging errors
+    }
+    return true;
+  },
+  errorMessage: 'Shipping API debug rule'
+};
+
 export default () => {
   console.log('[SHIPPING-API] Bootstrap: инициализация расширения shipping-api');
-  
-  // Создаем экземпляр сервиса (singleton)
-  // Singleton гарантирует, что все части расширения используют один и тот же экземпляр
+  console.log('[SHIPPING-API] Bootstrap: регистрация hookAfter(createOrderFunc) для создания отправлений');
+
+  // Регистрируем правило валидации через процессор orderValidator (addOrderValidationRule
+  // не экспортируется из пакета @evershop/evershop)
+  addProcessor('orderValidator', (validatorManager: any) => {
+    if (validatorManager && typeof validatorManager.add === 'function') {
+      validatorManager.add(debugOrderValidationRule);
+    }
+    return validatorManager;
+  });
+
+  /** Страховка: если shipping_method пуст, но shipping_method_metadata содержит Bring — восстанавливаем shipping_method из настроек перед валидацией. */
+  hookBefore('createOrderFunc', async (cart: any) => {
+    if (cart.getData('shipping_method')) return;
+    const rawMeta = cart.getData('shipping_method_metadata');
+    if (!rawMeta || typeof rawMeta !== 'string') return;
+    let meta: any;
+    try {
+      meta = JSON.parse(rawMeta);
+    } catch {
+      return;
+    }
+    if (meta?.provider !== 'bring') return;
+    const { select, update } = await import('@evershop/postgres-query-builder');
+    const { pool } = await import('@evershop/evershop/lib/postgres');
+    const connection: any = pool;
+    const setting = await select().from('setting').where('name', '=', 'shipping_api').load(connection);
+    if (!setting) return;
+    const configData: any = setting.is_json
+      ? (typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value)
+      : (typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value);
+    const bringUuid = configData?.providers?.bring?.shipping_method_uuid;
+    if (!bringUuid || typeof bringUuid !== 'string') return;
+    const cartId = cart.getData('cart_id');
+    if (!cartId) return;
+    await update('cart')
+      .given({ shipping_method: bringUuid.trim(), updated_at: new Date() })
+      .where('cart_id', '=', cartId)
+      .execute(connection);
+    cart.setData('shipping_method', bringUuid.trim());
+    console.log('[SHIPPING-API] createOrderFunc: восстановлен shipping_method из metadata', { cartId });
+  }, 5);
+
   const shippingService = ShippingProviderService.getInstance();
+  shippingService.registerAdapter(new BringAdapter());
 
-  // Регистрируем адаптеры провайдеров доставки
-  // Каждый адаптер реализует интерфейс BaseShippingAdapter
-  // PostNord и Helthjem не подключаем по требованию (файлы оставляем на будущее)
-  // shippingService.registerAdapter(new PostNordAdapter());
-  // shippingService.registerAdapter(new HelthjemAdapter());
-  
-  // Регистрируем Bring адаптер
-  const bringAdapter = new BringAdapter();
-  shippingService.registerAdapter(bringAdapter);
-  console.log('[SHIPPING-API] Bootstrap: BringAdapter зарегистрирован, код:', bringAdapter.getProviderCode());
-
-  /**
-   * Регистрация процессора расчета стоимости доставки
-   * 
-   * Этот процессор добавляет динамические варианты доставки от API провайдеров
-   * в стандартный список методов доставки EverShop.
-   * 
-   * @param cart - объект корзины
-   * @param methods - массив существующих методов доставки
-   * @param context - контекст выполнения
-   * @returns массив методов доставки с добавленными динамическими вариантами
-   */
-  // @ts-ignore - EverShop resolves processor signature at runtime
-  addProcessor('cartCalculateShipping', async (cart: any, methods: any[], context: any) => {
-    console.log('[SHIPPING-API] Bootstrap: процессор cartCalculateShipping зарегистрирован');
-    return await shippingCalculationProcessor(cart, methods, context);
+  // Поле shipping_method_metadata должно участвовать в Cart.exportData(), чтобы при создании
+  // заказа оно копировалось в order.shipping_method_metadata (план «без патча»)
+  addProcessor('cartFields', (fields: any[]) => {
+    return fields.concat([
+      {
+        key: 'shipping_method_metadata',
+        resolvers: [(v: any) => v]
+      }
+    ]);
   }, 100);
-  
-  console.log('[SHIPPING-API] Bootstrap: инициализация завершена');
 
-  /**
-   * Регистрация процессора создания отправления после оплаты заказа
-   * 
-   * ОШИБКА, КОТОРУЮ МЫ ФИКСИЛИ:
-   * Изначально было: addProcessor('orderCreateAfter', shippingOrderProcessor, 100);
-   * 
-   * ПРОБЛЕМА:
-   * - addProcessor ожидает функцию с сигнатурой SyncProcessor или AsyncProcessor
-   * - shippingOrderProcessor - это async функция, но TypeScript не мог правильно вывести тип
-   * - Ошибка: "Argument of type '(order: any, context: any) => Promise<void>' is not assignable"
-   * 
-   * РЕШЕНИЕ:
-   * - Обернули вызов в async arrow function внутри addProcessor
-   * - Это гарантирует правильную сигнатуру и обработку Promise
-   * 
-   * КАК ИЗБЕЖАТЬ В БУДУЩЕМ:
-   * - Всегда проверяйте сигнатуру процессоров в документации EverShop
-   * - Если процессор async, оборачивайте его в async функцию при регистрации
-   * - Используйте @ts-ignore только если точно уверены, что типы не совпадают из-за runtime resolution
-   * 
-   * @param order - объект заказа после создания
-   * @param context - контекст выполнения (содержит connection, request и т.д.)
-   * @param priority - приоритет выполнения (100 = выполняется после стандартных процессоров)
-   */
-  // @ts-ignore - EverShop resolves processor signature at runtime
-  addProcessor('orderCreateAfter', async (order: any, context: any) => {
-    await shippingOrderProcessor(order, context);
-  }, 100);
+  // Один триггер: создание отправления сразу после создания заказа (без проверки payment_status; подходит для COD и любых способов оплаты).
+  hookAfter(
+    'createOrderFunc',
+    async (order: any, cart: any) => {
+      try {
+        await shippingOrderProcessor(order, { cart });
+      } catch (e) {
+        console.error('[SHIPPING-API] hookAfter(createOrderFunc): ошибка во время ShippingOrderProcessor', {
+          orderId: order?.order_id,
+          error: (e as any)?.message
+        });
+      }
+    },
+    100
+  );
 };
 

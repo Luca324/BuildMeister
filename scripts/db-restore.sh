@@ -1,15 +1,9 @@
 #!/bin/sh
 set -e
 
-# Определяем корневую директорию проекта
-SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
-PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
-
-# Определяем режим работы: local или docker (по умолчанию)
+# Парсим аргументы сначала, чтобы знать режим работы
 MODE="docker"
 BACKUP_FILE=""
-
-# Парсим аргументы
 if [ "$1" = "local" ]; then
     MODE="local"
     BACKUP_FILE="${2}"
@@ -19,6 +13,20 @@ elif [ "$1" = "--local" ]; then
 else
     BACKUP_FILE="${1}"
 fi
+
+# Определяем корневую директорию проекта в зависимости от режима
+if [ "${MODE}" = "local" ]; then
+    # Локальный режим: используем $0 (работает в sh)
+    SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+else
+    # Docker режим: используем BASH_SOURCE если доступен
+    if [ -n "${BASH_VERSION:-}" ]; then
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    else
+        SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+    fi
+fi
+PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
 # Загружаем переменные окружения в зависимости от режима
 if [ "${MODE}" = "local" ]; then

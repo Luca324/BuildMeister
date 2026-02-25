@@ -32,6 +32,7 @@ interface BringConfig {
     city: string;
     streetName: string;
     streetNumber: string;
+    addressLine?: string; // Объединенный адрес для Booking API (опционально)
   };
   sender_email: string;
   sender_name?: string; // Имя отправителя
@@ -198,20 +199,7 @@ export class BringAdapter extends BaseShippingAdapter {
     }
 
     try {
-      console.log('[SHIPPING-API] BringAdapter.makeRequest отправка запроса:', {
-        url,
-        method,
-        headers: Object.keys(headers),
-        hasBody: !!body
-      });
-
       const response = await fetch(url, options);
-
-      console.log('[SHIPPING-API] BringAdapter.makeRequest получен ответ:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -224,20 +212,13 @@ export class BringAdapter extends BaseShippingAdapter {
       }
 
       const responseData = await response.json();
-      console.log('[SHIPPING-API] BringAdapter.makeRequest успешно:', {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        responseSize: JSON.stringify(responseData).length
-      });
       return responseData;
     } catch (error: any) {
       console.error('[SHIPPING-API] BringAdapter.makeRequest ОШИБКА:', {
         url,
         method,
         errorName: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack
+        errorMessage: error.message
       });
 
       if (error.name === 'TimeoutError' || error.name === 'AbortError') {
@@ -267,31 +248,25 @@ export class BringAdapter extends BaseShippingAdapter {
    * - withGuiInformation: true для получения названий и описаний
    */
   async calculateShipping(request: ShippingCalculationRequest): Promise<ShippingOption[]> {
-    console.log('[SHIPPING-API] BringAdapter.calculateShipping вызван');
     try {
       const config = await this.getConfig();
-      console.log('[SHIPPING-API] BringAdapter конфигурация загружена:', {
-        enabled: config.enabled,
-        hasApiKey: !!config.api_key,
-        hasApiUid: !!config.api_uid,
-        hasClientUrl: !!config.client_url,
-        hasCustomerNumber: !!config.customer_number,
-        testMode: config.test_mode
-      });
 
-      // Формат запроса для Shipping Guide API v2 согласно OpenAPI спецификации
-      // Вес указывается в граммах в массиве packages
+      // Список продукт-кодов Bring для запроса (посылки NO). id обязателен в каждом product.
+      // 5600 = Pakke levert hjem, 5800 = Servicenøkkel/Pakke i butikk, 5000 = Mini pakke, 4850 = Bedriftspakke
+      const productIdsToRequest = ['5600', '5800', '5000', '4850'];
+
       const apiRequest: any = {
         consignments: [
           {
+            id: '1',
             fromCountryCode: request.from.countryCode,
             fromPostalCode: request.from.postalCode,
             toCountryCode: request.to.countryCode,
             toPostalCode: request.to.postalCode,
             packages: [
               {
-                grossWeight: Math.round(request.weight * 1000), // Конвертируем кг в граммы
-                // Габариты в см (опционально, но рекомендуется для точного расчета цены)
+                id: '1',
+                grossWeight: Math.round(request.weight * 1000), // граммы
                 ...(request.dimensions.length && request.dimensions.width && request.dimensions.height ? {
                   length: request.dimensions.length,
                   width: request.dimensions.width,
@@ -299,52 +274,27 @@ export class BringAdapter extends BaseShippingAdapter {
                 } : {})
               }
             ],
-            // products: [] - если не указан, вернутся все доступные продукты
+            products: productIdsToRequest.map((id) =>
+              config.customer_number
+                ? { id, customerNumber: config.customer_number, autoSelectCustomerNumber: false }
+                : { id, autoSelectCustomerNumber: false }
+            )
           }
         ],
         withPrice: true,
         withExpectedDelivery: true,
         withGuiInformation: true,
-        language: 'NO', // Норвежский язык для названий и описаний
-        edi: false,
+        language: 'NO',
+        edi: false, // boolean; объявленная стоимость в Shipping Guide не передаётся через edi
         postingAtPostoffice: false,
         trace: false
       };
 
-      // Добавляем customer number в products, если указан (для получения согласованных цен)
-      if (config.customer_number) {
-        apiRequest.consignments[0].products = [
-          {
-            id: null, // null означает все доступные продукты
-            customerNumber: config.customer_number
-          }
-        ];
-      }
-
-      // Добавляем объявленную стоимость (EDI), если указана
-      if (request.declaredValue) {
-        apiRequest.edi = {
-          value: request.declaredValue.amount,
-          currency: request.declaredValue.currency
-        };
-      }
-
-      // Endpoint Shipping Guide API v2
-      console.log('[SHIPPING-API] BringAdapter запрос к API:', {
-        endpoint: '/shippingguide/api/v2/products',
-        requestBody: JSON.stringify(apiRequest, null, 2)
-      });
-      
       const response = await this.makeRequest(
         '/shippingguide/api/v2/products',
         'POST',
         apiRequest
       );
-
-      console.log('[SHIPPING-API] BringAdapter ответ от API получен:', {
-        hasConsignments: !!response.consignments,
-        consignmentsCount: response.consignments?.length || 0
-      });
 
       // Формат ответа согласно OpenAPI спецификации:
       // response.consignments[].products[] - массив продуктов с ценами и сроками
@@ -357,60 +307,106 @@ export class BringAdapter extends BaseShippingAdapter {
             return [];
           }
           // Фильтруем продукты с ошибками (оставляем только валидные)
-          return consignment.products.filter((product: any) => 
-            !product.errors || product.errors.length === 0
-          );
+          return consignment.products.filter((product: any) => {
+            if (product.errors && Array.isArray(product.errors) && product.errors.length > 0) {
+              return false;
+            }
+            return true;
+          });
         });
       }
 
       if (products.length === 0) {
-        // Адрес недоступен или нет вариантов доставки
-        console.log('[SHIPPING-API] BringAdapter: нет доступных продуктов в ответе');
-        console.log('[SHIPPING-API] BringAdapter: полный ответ API:', JSON.stringify(response, null, 2));
         return [];
       }
 
-      console.log('[SHIPPING-API] BringAdapter: найдено продуктов:', products.length);
-
       // Нормализуем варианты доставки
       const options: ShippingOption[] = products.map((product: any) => {
-        // Product ID (код продукта Bring)
-        const productId = product.id || product.productionCode;
+        // Product ID (код продукта Bring) - используем id, а не productionCode
+        // productionCode используется для EDI, не для booking
+        const productId = product.id;
+        
+        if (!productId) {
+          return null;
+        }
         
         // Название продукта из guiInformation или id
         const guiInfo = product.guiInformation || {};
-        const productName = guiInfo.displayName || guiInfo.name || productId || 'Bring Service';
+        const productName = guiInfo.displayName || guiInfo.productName || productId || 'Bring Service';
         
-        // Извлекаем цену
-        // Bring возвращает: price.listPrice (розничная), price.netPrice (согласованная), price.withVAT (с НДС)
+        // Извлекаем цену из вложенной структуры
+        // Bring возвращает: price.listPrice.priceWithAdditionalServices.amountWithVAT
+        // или price.netPrice.priceWithAdditionalServices.amountWithVAT
         const priceObj = product.price || {};
-        // Используем согласованную цену, если доступна, иначе розничную
-        const price = priceObj.netPrice || priceObj.listPrice || priceObj.withVAT || 0;
-        const currency = priceObj.currency || 'NOK';
+        // Используем netPrice если доступен, иначе listPrice
+        const priceSource = priceObj.netPrice || priceObj.listPrice || {};
+        // Извлекаем цену с дополнительными услугами или без них
+        const priceDetails = priceSource.priceWithAdditionalServices || priceSource.priceWithoutAdditionalServices || {};
+        // Используем цену с НДС, если доступна, иначе без НДС
+        const price = parseFloat(priceDetails.amountWithVAT || priceDetails.amountWithoutVAT || '0');
+        const currency = priceDetails.currencyCode || priceSource.currencyCode || priceObj.currencyCode || 'NOK';
 
         // Извлекаем срок доставки из expectedDelivery
+        // Согласно документации: expectedDelivery.workingDays (строка) или expectedDelivery.expectedDeliveryDate (объект)
         let estimatedDays: number | undefined;
         const expectedDelivery = product.expectedDelivery;
         
         if (expectedDelivery) {
-          // expectedDelivery может быть объектом с датой или строкой
-          const deliveryDate = expectedDelivery.date || expectedDelivery.expectedDeliveryDate || expectedDelivery;
-          if (deliveryDate) {
-            const delivery = new Date(deliveryDate);
-            const today = new Date();
-            const diffTime = delivery.getTime() - today.getTime();
-            estimatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            // Если дата в прошлом или сегодня, устанавливаем минимум 1 день
-            if (estimatedDays < 1) {
-              estimatedDays = 1;
+          // Приоритет 1: workingDays (количество рабочих дней)
+          if (expectedDelivery.workingDays) {
+            estimatedDays = parseInt(expectedDelivery.workingDays, 10);
+            if (isNaN(estimatedDays)) {
+              estimatedDays = undefined;
             }
-          } else if (expectedDelivery.workingDays) {
-            estimatedDays = expectedDelivery.workingDays;
+          }
+          
+          // Приоритет 2: расчет из даты доставки
+          if (!estimatedDays && expectedDelivery.expectedDeliveryDate) {
+            const deliveryDateObj = expectedDelivery.expectedDeliveryDate;
+            // expectedDeliveryDate может быть объектом с year, month, day
+            if (deliveryDateObj.year && deliveryDateObj.month && deliveryDateObj.day) {
+              const delivery = new Date(
+                parseInt(deliveryDateObj.year),
+                parseInt(deliveryDateObj.month) - 1, // месяц начинается с 0
+                parseInt(deliveryDateObj.day)
+              );
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              delivery.setHours(0, 0, 0, 0);
+              const diffTime = delivery.getTime() - today.getTime();
+              estimatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              // Если дата в прошлом или сегодня, устанавливаем минимум 1 день
+              if (estimatedDays < 1) {
+                estimatedDays = 1;
+              }
+            }
+          }
+          
+          // Приоритет 3: formattedExpectedDeliveryDate (строка в формате dd.MM.yyyy)
+          if (!estimatedDays && expectedDelivery.formattedExpectedDeliveryDate) {
+            const dateStr = expectedDelivery.formattedExpectedDeliveryDate;
+            // Парсим формат dd.MM.yyyy
+            const parts = dateStr.split('.');
+            if (parts.length === 3) {
+              const delivery = new Date(
+                parseInt(parts[2]),
+                parseInt(parts[1]) - 1,
+                parseInt(parts[0])
+              );
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              delivery.setHours(0, 0, 0, 0);
+              const diffTime = delivery.getTime() - today.getTime();
+              estimatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              if (estimatedDays < 1) {
+                estimatedDays = 1;
+              }
+            }
           }
         }
 
-        return {
-          id: productId || `bring_${Date.now()}_${Math.random()}`,
+        const option: ShippingOption = {
+          id: productId,
           name: productName,
           price: price,
           currency: currency,
@@ -427,16 +423,8 @@ export class BringAdapter extends BaseShippingAdapter {
             ...product // Сохраняем все дополнительные данные от API
           }
         };
-      });
-
-      console.log('[SHIPPING-API] BringAdapter: нормализовано вариантов:', options.length);
-      console.log('[SHIPPING-API] BringAdapter: варианты:', options.map(o => ({
-        id: o.id,
-        name: o.name,
-        price: o.price,
-        currency: o.currency,
-        estimatedDays: o.estimatedDays
-      })));
+        return option;
+      }).filter((option): option is ShippingOption => option !== null && option !== undefined);
 
       return options;
     } catch (error: any) {
@@ -488,27 +476,53 @@ export class BringAdapter extends BaseShippingAdapter {
    */
   async createBooking(request: ShippingBookingRequest): Promise<ShippingBookingResult> {
     try {
+      console.log('[SHIPPING-API] BringAdapter.createBooking: вход', {
+        orderId: request.orderId,
+        orderNumber: request.orderNumber ?? null,
+        selectedOptionId: request.selectedOptionId
+      });
+
       const config = await this.getConfig();
+
+      console.log('[SHIPPING-API] BringAdapter.createBooking: конфигурация', {
+        test_mode: config.test_mode ?? null,
+        customer_number: config.customer_number ?? null,
+        from_address: {
+          postalCode: config.from_address?.postalCode,
+          city: config.from_address?.city,
+          countryCode: config.from_address?.countryCode
+        }
+      });
 
       if (!config.customer_number) {
         throw new Error('Bring customer number is required for booking');
       }
 
-      // Формат запроса для Booking API согласно OpenAPI спецификации
-      // Product ID извлекаем из selectedOptionId (это ID продукта Bring)
       const productId = request.selectedOptionId;
 
       // Формируем адрес отправителя из конфигурации
-      const senderAddressLine = `${config.from_address.streetName} ${config.from_address.streetNumber}`.trim();
+      // Bring Booking API требует addressLine (объединенный адрес)
+      let senderAddressLine: string;
+      if (config.from_address.addressLine) {
+        senderAddressLine = config.from_address.addressLine;
+      } else {
+        senderAddressLine = `${config.from_address.streetName || ''} ${config.from_address.streetNumber || ''}`.trim();
+      }
 
       // Формируем адрес получателя
-      const recipientAddressLine = `${request.to.streetName} ${request.to.streetNumber}`.trim();
+      // Если в request.to есть addressLine, используем его, иначе объединяем streetName и streetNumber
+      let recipientAddressLine: string;
+      if ((request.to as any).addressLine) {
+        recipientAddressLine = (request.to as any).addressLine;
+      } else {
+        recipientAddressLine = `${request.to.streetName || ''} ${request.to.streetNumber || ''}`.trim();
+      }
 
       const apiRequest: any = {
         schemaVersion: 1,
         consignments: [
           {
-            shippingDateTime: new Date().toISOString(), // Текущая дата и время готовности к отправке
+            shippingDateTime: new Date().toISOString(), // Текущая дата и время готовности к отправке (формат ISO 8601)
             product: {
               id: productId,
               customerNumber: config.customer_number
@@ -554,7 +568,7 @@ export class BringAdapter extends BaseShippingAdapter {
                   widthInCm: Math.round(request.dimensions.width),
                   lengthInCm: Math.round(request.dimensions.length)
                 },
-                volumeInDm3: request.dimensions.length * request.dimensions.width * request.dimensions.height / 1000, // Конвертируем см³ в дм³
+                volumeInDm3: Math.round((request.dimensions.length * request.dimensions.width * request.dimensions.height) / 1000), // Конвертируем см³ в дм³ (1 дм³ = 1000 см³)
                 containerId: null,
                 packageType: null,
                 correlationId: request.orderNumber || null
@@ -563,6 +577,24 @@ export class BringAdapter extends BaseShippingAdapter {
           }
         ]
       };
+
+      console.log('[SHIPPING-API] BringAdapter.createBooking: подготовленный запрос', {
+        productId,
+        customerNumber: config.customer_number,
+        shippingDateTime: apiRequest.consignments?.[0]?.shippingDateTime,
+        sender: apiRequest.consignments?.[0]?.parties?.sender && {
+          postalCode: apiRequest.consignments[0].parties.sender.postalCode,
+          city: apiRequest.consignments[0].parties.sender.city,
+          countryCode: apiRequest.consignments[0].parties.sender.countryCode
+        },
+        recipient: apiRequest.consignments?.[0]?.parties?.recipient && {
+          postalCode: apiRequest.consignments[0].parties.recipient.postalCode,
+          city: apiRequest.consignments[0].parties.recipient.city,
+          countryCode: apiRequest.consignments[0].parties.recipient.countryCode
+        },
+        weightInKg: apiRequest.consignments?.[0]?.packages?.[0]?.weightInKg,
+        dimensions: apiRequest.consignments?.[0]?.packages?.[0]?.dimensions
+      });
 
       // Endpoint Booking API для создания отправления
       // Согласно документации: POST /booking/api/create
@@ -575,6 +607,8 @@ export class BringAdapter extends BaseShippingAdapter {
           'X-Bring-Test-Indicator': config.test_mode ? 'true' : 'false'
         }
       );
+
+      console.log('[SHIPPING-API] BringAdapter.createBooking: ответ API', JSON.stringify(response, null, 2));
 
       // Формат ответа Booking API согласно OpenAPI спецификации:
       // response.consignments[].confirmation.consignmentNumber - tracking number
@@ -613,8 +647,14 @@ export class BringAdapter extends BaseShippingAdapter {
       // QR код из packages[].qrCodeLink (если запрошен)
       const qrCodeUrl = confirmation.packages?.[0]?.qrCodeLink || null;
 
-      // Booking ID (используем consignmentNumber как ID)
       const bookingId = trackingNumber;
+
+      console.log('[SHIPPING-API] BringAdapter.createBooking: успех', {
+        orderNumber: request.orderNumber ?? null,
+        consignmentNumber: trackingNumber,
+        hasLabelUrl: !!labelUrl,
+        hasQrCodeUrl: !!qrCodeUrl
+      });
 
       return {
         trackingNumber: trackingNumber,
@@ -626,10 +666,17 @@ export class BringAdapter extends BaseShippingAdapter {
           consignmentId: bookingId,
           packageNumbers: confirmation.packages?.map((pkg: any) => pkg.packageNumber) || [],
           expectedDelivery: confirmation.dateAndTimes?.expectedDelivery || null,
-          ...confirmation // Сохраняем все дополнительные данные
+          ...confirmation
         }
       };
     } catch (error: any) {
+      console.error('[SHIPPING-API] BringAdapter.createBooking: ошибка', {
+        orderNumber: request.orderNumber ?? null,
+        error: error.message,
+        code: (error as any)?.code ?? null,
+        statusCode: (error as any)?.statusCode ?? null,
+        response: (error as any)?.response ?? null
+      });
       if (error instanceof ShippingProviderTimeoutError || 
           error instanceof ShippingProviderUnavailableError) {
         throw error;

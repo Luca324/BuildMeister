@@ -9,45 +9,82 @@ import { ShippingBookingRequest } from '../adapters/types.js';
 
 export default async function shippingOrderProcessor(order: any, context: any) {
   try {
-    // Проверка условий
     if (!order) {
       return;
     }
 
-    // Проверка оплаты
-    const paymentStatus = order.payment_status;
-    const isPaid = paymentStatus === 'paid' || paymentStatus === 'captured';
-    if (!isPaid) {
-      // Оплата еще не завершена, пропускаем создание отправления
-      return;
-    }
+    // Политика: создаём отправление по факту создания заказа, без проверки payment_status.
+    // Подходит для COD и любых способов оплаты; при отложенном capture отправление создаётся до оплаты.
+    console.log('[SHIPPING-API] ShippingOrderProcessor: начало', {
+      orderId: order.order_id,
+      orderNumber: order.order_number,
+      paymentStatus: order.payment_status,
+      rawShippingMethod: order.shipping_method,
+      rawShippingMethodMetadata: order.shipping_method_metadata
+    });
 
-    // Проверка метода доставки
+    // План «без патча»: данные для букинга берём из shipping_method_metadata (полный JSON).
+    // Если метаданных нет — пробуем старый формат (JSON в shipping_method) для обратной совместимости
     let shippingMethod: any;
-    try {
-      shippingMethod = typeof order.shipping_method === 'string' 
-        ? JSON.parse(order.shipping_method) 
-        : order.shipping_method;
-    } catch (e) {
-      // shipping_method не JSON, значит обычный метод EverShop
-      return;
+    const rawMetadata = order.shipping_method_metadata;
+    if (rawMetadata && typeof rawMetadata === 'string') {
+      try {
+        shippingMethod = JSON.parse(rawMetadata);
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (!shippingMethod && order.shipping_method) {
+      try {
+        shippingMethod = typeof order.shipping_method === 'string'
+          ? JSON.parse(order.shipping_method)
+          : order.shipping_method;
+      } catch (e) {
+        // ignore
+      }
     }
 
     if (!shippingMethod || !shippingMethod.provider) {
-      // Обычный метод доставки, не требует создания отправления через API
+      console.warn('[SHIPPING-API] ShippingOrderProcessor: shippingMethod не разобран или нет provider', {
+        orderId: order.order_id,
+        rawShippingMethod: order.shipping_method,
+        rawShippingMethodMetadata: order.shipping_method_metadata
+      });
       return;
     }
 
     const providerCode = shippingMethod.provider;
     const deliveryOptionId = shippingMethod.metadata?.deliveryOptionId;
 
+    console.log('[SHIPPING-API] ShippingOrderProcessor: разобран метод доставки', {
+      orderId: order.order_id,
+      provider: providerCode,
+      deliveryOptionId,
+      name: shippingMethod.name || null
+    });
+
     if (!deliveryOptionId) {
-      // @ts-ignore
-      const { getLogger } = await import('@evershop/evershop/lib/log/log');
-      const logger = getLogger();
-      logger.warn('deliveryOptionId not found in shipping method metadata', { orderId: order.order_id });
+      console.warn('[SHIPPING-API] ShippingOrderProcessor: deliveryOptionId не найден в metadata', {
+        orderId: order.order_id,
+        provider: providerCode,
+        metadata: shippingMethod.metadata || null
+      });
       return;
     }
+
+    if (providerCode !== 'bring') {
+      console.log('[SHIPPING-API] ShippingOrderProcessor: пропуск, provider != bring', {
+        orderId: order.order_id,
+        provider: providerCode
+      });
+      return;
+    }
+
+    console.log('[SHIPPING-API] ShippingOrderProcessor: создание отправления', {
+      orderId: order.order_id,
+      provider: providerCode,
+      deliveryOptionId
+    });
 
     // Загружаем данные заказа
     // @ts-ignore
@@ -154,9 +191,34 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       }
     };
 
-    // Создаем отправление
     const service = ShippingProviderService.getInstance();
+
+    console.log('[SHIPPING-API] ShippingOrderProcessor: перед вызовом createShipment', {
+      orderId: order.order_id,
+      provider: providerCode,
+      deliveryOptionId,
+      from: {
+        postalCode: fromAddress.postalCode,
+        city: fromAddress.city,
+        countryCode: fromAddress.countryCode
+      },
+      to: {
+        postalCode: toAddress.postalCode,
+        city: toAddress.city,
+        countryCode: toAddress.countryCode
+      },
+      weightKg: totalWeight,
+      dimensionsCm: bookingRequest.dimensions
+    });
+
     const result = await service.createShipment(providerCode, bookingRequest);
+
+    console.log('[SHIPPING-API] ShippingOrderProcessor: отправление создано', {
+      orderId: order.order_id,
+      trackingNumber: result.trackingNumber,
+      hasLabelUrl: !!result.labelUrl,
+      hasQrCodeUrl: !!result.qrCodeUrl
+    });
 
     // Сохраняем в БД
     try {
@@ -219,6 +281,11 @@ export default async function shippingOrderProcessor(order: any, context: any) {
           updated_at: new Date()
         })
         .execute(connection);
+
+      console.log('[SHIPPING-API] ShippingOrderProcessor: запись в БД (shipment, order_activity)', {
+        orderId: order.order_id,
+        trackingNumber: result.trackingNumber
+      });
 
       // Отправляем email продавцу с QR кодом
       if (result.qrCodeUrl && providerConfig.sender_email) {
@@ -284,12 +351,16 @@ export default async function shippingOrderProcessor(order: any, context: any) {
       throw dbError; // Пробрасываем дальше для обработки внешним catch
     }
   } catch (error: any) {
-    // Логируем ошибку, но не блокируем создание заказа
+    console.error('[SHIPPING-API] ShippingOrderProcessor: ошибка создания отправления', {
+      orderId: order?.order_id,
+      error: error.message,
+      stack: error.stack
+    });
     // @ts-ignore
     const { getLogger } = await import('@evershop/evershop/lib/log/log');
     const logger = getLogger();
     logger.error('Failed to create shipment', {
-      orderId: order.order_id,
+      orderId: order?.order_id,
       error: error.message,
       stack: error.stack
     });
