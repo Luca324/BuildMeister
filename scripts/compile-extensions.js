@@ -77,13 +77,10 @@ function compileModule(name, path) {
     return true;
   }
 
-  logStep(`📦 Компиляция ${name}...`);
-  
   try {
     // Удаляем старую папку dist для чистоты сборки
     const distPath = resolve(path, 'dist');
     if (existsSync(distPath)) {
-      logInfo(`Очистка старой папки dist в ${name}...`);
       if (process.platform === 'win32') {
         execSync(`rmdir /s /q "${distPath}"`, { cwd: path, stdio: 'pipe' });
       } else {
@@ -105,7 +102,6 @@ function compileModule(name, path) {
         logError(`${name}: папка dist пуста после компиляции`);
         return false;
       }
-      logSuccess(`${name} успешно скомпилирован`);
       return true;
     } else {
       logError(`${name}: папка dist не была создана`);
@@ -119,8 +115,6 @@ function compileModule(name, path) {
 
 // Главная функция
 function main() {
-  log('\n🚀 Начало компиляции расширений и темы...', 'bright');
-  
   let hasErrors = false;
   
   // Компилируем тему
