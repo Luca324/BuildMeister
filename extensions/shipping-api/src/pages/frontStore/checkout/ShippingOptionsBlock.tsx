@@ -479,7 +479,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
                       <div className="field-wrapper radio-field">
                         {providerResult.options.map((option) => {
                           const inputId = `method-${providerResult.provider}-${option.id}`;
-                          const daysPart = option.estimatedDays ? ` (${option.estimatedDays} dag.)` : '';
+                          const daysPart = ` (1-4 virkedager)`;
                           const priceText = `${option.price} ${option.currency}`;
                           const labelText = `${option.name}${daysPart} - ${priceText}`;
                           const isSelected = selectedOption === option.id;

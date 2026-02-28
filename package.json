@@ -11,7 +11,7 @@
     "build": "evershop build",
     "start": "evershop start",
     "start:debug": "evershop start --debug",
-    "dev": "cross-env PORT=3000 evershop dev",
+    "dev": "evershop dev",
     "user:create": "evershop user:create",
     "db:export": "./scripts/db-dump.sh",
     "db:export:versioned": "node scripts/export-versioned.js",

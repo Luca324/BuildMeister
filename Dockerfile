@@ -6,16 +6,16 @@ RUN npm install -g npm
 RUN apk add --no-cache postgresql-client
 
 COPY package*.json .
+COPY patches ./patches
+RUN npm install
+
 COPY themes ./themes
 COPY extensions ./extensions
 COPY config ./config
 COPY scripts ./scripts
 COPY .evershop ./.evershop
 COPY backups ./backups
-COPY patches ./patches
 COPY nginx/html/maintenance.html ./nginx/html/maintenance.html
-
-RUN npm install
 
 # Устанавливаем права на выполнение для скриптов
 RUN chmod +x ./scripts/db-dump.sh

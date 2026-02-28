@@ -1,0 +1,14 @@
+/node_modules
+/.evershop
+.cursorignore
+.cursor
+.specstory/
+**/dist/
+.env
+docker.env
+local.env
+/evershop
+nginx/ssl/cert.pem
+nginx/ssl/cert.pem.backup
+nginx/ssl/key.pem
+backups/
