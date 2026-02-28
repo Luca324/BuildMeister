@@ -475,7 +475,7 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
                       Доставка в этот адрес недоступна
                     </p>
                   ) : (
-                    <div className="form-field-container">
+                    <div className="form-field-container" style={{ paddingLeft: '1rem' }}>
                       <div className="field-wrapper radio-field">
                         {providerResult.options.map((option) => {
                           const inputId = `method-${providerResult.provider}-${option.id}`;
