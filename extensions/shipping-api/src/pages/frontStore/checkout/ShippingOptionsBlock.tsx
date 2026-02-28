@@ -485,30 +485,43 @@ export default function ShippingOptionsBlock({ cart }: ShippingOptionsBlockProps
                           const isSelected = selectedOption === option.id;
 
                           return (
-                            <div key={option.id}>
-                              <label htmlFor={inputId} className="flex">
+                            <div key={option.id} style={{ marginBottom: '8px' }}>
+                              <label htmlFor={inputId} className="flex" style={{ alignItems: 'center', minHeight: '24px', position: 'relative' }}>
                                 <input
                                   type="radio"
                                   name="method"
                                   id={inputId}
                                   value={`api_bring_${option.id}`}
+                                  checked={isSelected}
                                   onChange={() =>
                                     handleSelectOption(option, providerResult.providerName)
                                   }
-                                />
-                                <span
-                                  className="radio-unchecked"
-                                  style={
-                                    isSelected
+                                  style={{
+                                    width: '20px',
+                                    height: '20px',
+                                    minWidth: '20px',
+                                    minHeight: '20px',
+                                    flexShrink: 0,
+                                    margin: 0,
+                                    padding: 0,
+                                    cursor: 'pointer',
+                                    appearance: 'none',
+                                    WebkitAppearance: 'none',
+                                    MozAppearance: 'none',
+                                    borderRadius: '50%',
+                                    border: '2px solid #ccc',
+                                    backgroundColor: 'transparent',
+                                    position: 'relative',
+                                    ...(isSelected
                                       ? {
                                           borderColor: '#007bff',
                                           backgroundColor: '#007bff',
                                           boxShadow: '0 0 0 2px rgba(0, 123, 255, 0.25)'
                                         }
-                                      : undefined
-                                  }
+                                      : {})
+                                  }}
                                 />
-                                <span className="pl-4">{labelText}</span>
+                                <span className="pl-4" style={{ flex: 1, lineHeight: '1.5' }}>{labelText}</span>
                               </label>
                             </div>
                           );

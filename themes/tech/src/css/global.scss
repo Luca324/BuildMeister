@@ -125,3 +125,30 @@ a.hover\:text-gray-300.transition-colors.block.md\:inline-block.px-4.py-4.md\:px
   list-style-type: square; 
   padding-left: 20px;  
 }
+
+/* Исправление сжатия радиокнопок при выборе способа доставки */
+.shipping-methods input[type="radio"],
+.radio-field input[type="radio"],
+.field-wrapper input[type="radio"],
+.form-field-container input[type="radio"] {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.shipping-methods label,
+.radio-field label,
+.field-wrapper label {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 24px !important;
+}
+
+.shipping-methods label > span,
+.radio-field label > span {
+  flex-shrink: 0;
+}
