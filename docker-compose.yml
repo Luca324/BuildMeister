@@ -45,57 +45,57 @@ services:
     networks:
       - myevershop
   
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: postgres-exporter
-    restart: unless-stopped
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?sslmode=disable"
-    networks:
-      - myevershop
-    depends_on:
-      - database
-    expose:
-      - "9187"  # Только внутри docker-сети, НЕ наружу
+  # postgres-exporter:
+  #   image: prometheuscommunity/postgres-exporter:latest
+  #   container_name: postgres-exporter
+  #   restart: unless-stopped
+  #   environment:
+  #     DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?sslmode=disable"
+  #   networks:
+  #     - myevershop
+  #   depends_on:
+  #     - database
+  #   expose:
+  #     - "9187"  # Только внутри docker-сети, НЕ наружу
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:9090:9090"  # Только localhost сервера (доступ снаружи через SSH tunnel)
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.listen-address=:9090'
-      - '--web.external-url=/'  # Если за reverse proxy
-    networks:
-      - myevershop
-    expose:
-      - "9090"  # Только внутри сети
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:9090:9090"  # Только localhost сервера (доступ снаружи через SSH tunnel)
+  #   volumes:
+  #     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus-data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.listen-address=:9090'
+  #     - '--web.external-url=/'  # Если за reverse proxy
+  #   networks:
+  #     - myevershop
+  #   expose:
+  #     - "9090"  # Только внутри сети
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_SERVER_ROOT_URL=https://buildmeister.no/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
-    volumes:
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - grafana-data:/var/lib/grafana
-    networks:
-      - myevershop
-    depends_on:
-      - prometheus
-    expose:
-      - "3000"
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   restart: unless-stopped
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+  #     - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+  #     - GF_SERVER_ROOT_URL=https://buildmeister.no/grafana/
+  #     - GF_SERVER_SERVE_FROM_SUB_PATH=true
+  #   volumes:
+  #     - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+  #     - ./grafana/datasources:/etc/grafana/provisioning/datasources
+  #     - grafana-data:/var/lib/grafana
+  #   networks:
+  #     - myevershop
+  #   depends_on:
+  #     - prometheus
+  #   expose:
+  #     - "3000"
 
 
 networks:
@@ -106,5 +106,5 @@ networks:
 volumes:
   postgres-data:
   nginx_logs:
-  prometheus-data:
-  grafana-data:
+  # prometheus-data:
+  # grafana-data:
