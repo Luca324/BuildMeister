@@ -118,4 +118,4 @@ DB_HOST=database
 - `docker cp buildmeister-app-1:/backups/$(docker compose exec -T app sh -c 'ls -t /app/backups/backup_*.dump | head -1 | xargs basename') ./backups/`
 
 ## Копирование файла дампа в хост систему
-- `docker compose cp app:/backups/backup_name.dump ./backups/`
+- `docker compose cp app:/app/backups/backup_name.dump ./backups/`
