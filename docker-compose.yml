@@ -17,9 +17,7 @@ services:
       - myevershop
 
   app:
-    build: 
-      context: .  # путь к папке с Dockerfile
-      dockerfile: Dockerfile
+    image: buildmeister-app:stable-20260306
     restart: always
     command: ["/bin/sh", "./scripts/entrypoint.sh"]
     env_file:
