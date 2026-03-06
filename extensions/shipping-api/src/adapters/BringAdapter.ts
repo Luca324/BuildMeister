@@ -252,8 +252,9 @@ export class BringAdapter extends BaseShippingAdapter {
       const config = await this.getConfig();
 
       // Список продукт-кодов Bring для запроса (посылки NO). id обязателен в каждом product.
-      // 5600 = Pakke levert hjem, 5800 = Servicenøkkel/Pakke i butikk, 5000 = Mini pakke, 4850 = Bedriftspakke
-      const productIdsToRequest = ['5600', '5800', '5000', '4850'];
+      // Запрашиваем только B2C: 5600 = Pakke levert hjem, 5800 = Servicenøkkel/Pakke i butikk.
+      // Намеренно не запрашиваем 5000 (Pakke til bedrift) и 4850 (Pakke til bedrift ekspress).
+      const productIdsToRequest = ['5600', '5800'];
 
       const apiRequest: any = {
         consignments: [
