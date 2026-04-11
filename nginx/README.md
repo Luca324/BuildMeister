@@ -2,70 +2,75 @@
 
 ## ⚠️ ВАЖНО: Перед первым запуском
 
-Nginx требует наличия SSL сертификатов для запуска. 
+Nginx требует наличия SSL сертификатов для запуска.
 
-После получения SSL сертификата от провайдера, поместите файлы в папку `secrets/`:
+Файлы лежат в **`nginx/ssl/`**. В `docker-compose.yml` эта директория монтируется в контейнер как `/etc/nginx/ssl`.
 
-## Структура файлов в secrets/:
+## Структура файлов в `nginx/ssl/`
 
 ```
-secrets/
-├── cert.pem      # SSL сертификат (или .crt файл)
-└── key.pem       # Приватный ключ (уже должен быть там)
+nginx/ssl/
+├── cert.pem           # листовой сертификат домена (от провайдера, часто только «ваш» без цепочки)
+├── intermediate.crt   # промежуточный сертификат CA (скачивается у издателя, например DigiCert)
+├── fullchain.pem      # сцепка: сначала cert.pem, затем intermediate.crt — его указывает nginx
+├── key.pem            # приватный ключ
+└── nginx.conf         # отдельный конфиг для сценария `docker-compose.nginx.yml` (локально / host network)
 ```
 
-## Имена файлов
+Основной продовый конфиг: **`nginx/nginx.conf`** — там заданы `ssl_certificate` (обычно **`fullchain.pem`**) и `ssl_certificate_key` (**`key.pem`**).
 
-Nginx ожидает следующие имена файлов:
-- **cert.pem** - SSL сертификат (может быть переименован из .crt или .pem)
-- **key.pem** - Приватный ключ (уже должен быть создан при генерации CSR)
+### Промежуточный сертификат (цепочка доверия)
 
-### Если у вас другие имена файлов
+Имеет смысл помнить: **одного только `cert.pem` часто недостаточно.** Многие провайдеры отдают лист отдельно от промежуточного CA. Если nginx отдаёт только лист, клиенты получают ошибку неполной цепочки (`unable to verify the first certificate` и т.п.).
 
-Если провайдер выдал файлы с другими именами (например, `certificate.crt` и `private.key`), переименуйте их:
+Нужно:
+
+1. Скачать промежуточный сертификат у вашего CA (для GeoTrust TLS RSA CA G1 у DigiCert, например: `https://cacerts.digicert.com/GeoTrustTLSRSACAG1.crt.pem`) и сохранить как `nginx/ssl/intermediate.crt`.
+2. Собрать цепочку (сначала лист, потом промежуточный):
+
+   ```bash
+   cat nginx/ssl/cert.pem nginx/ssl/intermediate.crt > nginx/ssl/fullchain.pem
+   ```
+
+3. В `nginx/nginx.conf` должно быть что-то вроде:
+
+   ```nginx
+   ssl_certificate     /etc/nginx/ssl/fullchain.pem;
+   ssl_certificate_key /etc/nginx/ssl/key.pem;
+   ```
+
+4. Перезагрузить nginx (после `nginx -t`): например `docker compose exec nginx nginx -s reload` или `docker compose restart nginx`.
+
+Проверка снаружи:
 
 ```bash
-# Пример: если получили certificate.crt и private.key
-cp secrets/certificate.crt secrets/cert.pem
-cp secrets/private.key secrets/key.pem
+echo | openssl s_client -connect buildmeister.no:443 -servername buildmeister.no 2>&1
 ```
 
-Или обновите пути в `nginx.conf`:
-```nginx
-ssl_certificate /etc/nginx/ssl/certificate.crt;
-ssl_certificate_key /etc/nginx/ssl/private.key;
-```
+Ожидается: **`verify return code: 0 (ok)`** в выводе. 
 
 ### Права доступа
 
-Убедитесь, что файлы имеют правильные права:
 ```bash
-chmod 644 secrets/cert.pem
-chmod 600 secrets/key.pem
+chmod 644 nginx/ssl/cert.pem nginx/ssl/fullchain.pem nginx/ssl/intermediate.crt
+chmod 600 nginx/ssl/key.pem
 ```
 
 ## Запуск
 
-После размещения сертификатов в `secrets/`:
+После размещения сертификатов в **`nginx/ssl/`**:
 
 ```bash
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 
 ## Проверка
 
-После запуска проверьте логи nginx:
+Логи nginx:
+
 ```bash
-docker-compose logs nginx
+docker compose logs nginx
 ```
 
-Если все правильно, сайт будет доступен по HTTPS: `https://buildmeister.no`
-
-## Что было настроено
-
-✅ Nginx добавлен в docker-compose.yml как reverse proxy  
-✅ Настроен автоматический редирект HTTP → HTTPS  
-✅ Настроены заголовки безопасности  
-✅ Поддержка WebSocket для реального времени  
-✅ Оптимизация для статических файлов  
+Если всё настроено, сайт доступен по HTTPS, например `https://buildmeister.no`.

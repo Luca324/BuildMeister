@@ -8,7 +8,5 @@
 docker.env
 local.env
 /evershop
-nginx/ssl/cert.pem
-nginx/ssl/cert.pem.backup
-nginx/ssl/key.pem
+nginx/ssl/
 backups/
